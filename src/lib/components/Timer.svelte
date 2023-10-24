@@ -12,7 +12,7 @@
 	let resting: boolean = false;
 
 	// Estados del timer
-	let counterTime = Number(tiempo) * 60; // <-- Derived state from tiempo
+	$: counterTime = Number(tiempo) * 60; // <-- Derived state from tiempo
 
 	// Create a timer with the counterTime <-- Derived state from counterTime and tiempo
 	$: timer = `${Math.floor(counterTime / 60)}:${
