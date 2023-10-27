@@ -32,13 +32,16 @@
 				audio.play();
 
 				// Mostrar notificacion
-				new Notification("Pomodoro App", {
-					body: "Time is up!",
-					icon: "imgs/tomato.png",
-				});
+				try {
+					new Notification("Pomodoro App", {
+						body: "Time is up!",
+						icon: "imgs/tomato.png",
+					});
+				} catch (error) {
+					console.error("Notification error:", error);
+				}
 
 				// Mostrar descanso
-
 				resting = true;
 				counterTime = Number(restTime) * 60;
 			}
@@ -60,11 +63,6 @@
 		};
 
 		function startCounter() {
-			if (!tiempo) {
-				alert("Please select a focus time");
-				return;
-			}
-
 			running = true;
 			clearInterval(interval as number);
 			interval = setInterval(updateCounter, 1000);
