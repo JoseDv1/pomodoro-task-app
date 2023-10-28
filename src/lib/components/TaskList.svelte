@@ -48,7 +48,7 @@
 							{@html trash}
 							Remove
 						</button>
-						<button
+						<!-- <button
 							class="update"
 							on:click={() => taskManager.updateTask(task)}
 						>
@@ -57,11 +57,10 @@
 						</button>
 						<input
 							type="checkbox"
-							bind:checked={task.completed}
-							on:click={(e) => {
-								taskManager.completeTask(task, e);
+							on:click={() => {
+								taskManager.completeTask(task);
 							}}
-						/>
+						/> -->
 					</div>
 				</li>
 			{/each}
@@ -86,6 +85,14 @@
 		align-items: center;
 		gap: 1rem;
 		flex-wrap: wrap-reverse;
+	}
+
+	header h2 {
+		font-size: 3rem;
+
+		@media (max-width: 600px) {
+			font-size: 2rem;
+		}
 	}
 
 	header div {
@@ -126,15 +133,15 @@
 		border-radius: 10px;
 		margin-bottom: 0.5rem;
 		scroll-snap-align: start;
-	}
-
-	h2 {
-		font-size: 3rem;
-		margin-bottom: 1rem;
+		word-break: break-word;
 	}
 
 	h3 {
 		font-size: 2rem;
+
+		@media (max-width: 600px) {
+			font-size: 1.5rem;
+		}
 	}
 
 	p {
@@ -148,10 +155,29 @@
 		gap: 1rem;
 	}
 
-	input[type="checkbox"] {
-		width: 2rem;
-		height: 2rem;
+	li div {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 1rem;
+		flex-wrap: wrap;
+
+		& button {
+			@media (max-width: 600px) {
+				font-size: 0.75rem;
+
+				& svg {
+					width: 1rem;
+					height: 1rem;
+				}
+			}
+		}
 	}
+
+	/* input[type="checkbox"] {
+		width: 32px;
+		height: 32px;
+	} */
 
 	button {
 		padding: 0.25rem 1rem;
@@ -159,6 +185,7 @@
 		border-radius: 5px;
 		cursor: pointer;
 		font-size: 1rem;
+		word-break: normal;
 	}
 
 	.remove {
@@ -170,14 +197,14 @@
 		}
 	}
 
-	.update {
+	/* .update {
 		background-color: #0a0;
 		color: #fff;
 
 		&:hover {
 			background-color: #080;
 		}
-	}
+	} */
 
 	.completed {
 		background-color: #00ff0088;
@@ -188,7 +215,7 @@
 		text-decoration: line-through;
 	}
 
-	.completed input[type="checkbox"] {
+	/* .completed input[type="checkbox"] {
 		background-color: #0a0;
-	}
+	} */
 </style>

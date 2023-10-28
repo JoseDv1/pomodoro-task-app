@@ -41,8 +41,8 @@ function createTaskManager() {
 		// Open Dialog with the task data
 	}
 
-	function completeTask(task: Task, e: Event) {
-		// Make task.completed = true
+	function completeTask(task: Task) {
+
 		taskList.update((list) => {
 			const index = list.findIndex((t) => t.id === task.id);
 			list[index].completed = !list[index].completed;

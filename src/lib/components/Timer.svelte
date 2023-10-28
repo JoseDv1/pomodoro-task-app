@@ -35,7 +35,7 @@
 				try {
 					new Notification("Pomodoro App", {
 						body: "Time is up!",
-						icon: "imgs/tomato.png",
+						icon: "imgs/icons/tomato.png",
 					});
 				} catch (error) {
 					console.error("Notification error:", error);
@@ -185,7 +185,7 @@
 	}
 
 	.timer {
-		font-size: 4rem;
+		font-size: 3rem;
 		flex: 1;
 		display: flex;
 		align-items: center;
