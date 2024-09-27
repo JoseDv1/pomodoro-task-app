@@ -20,12 +20,12 @@
 
 	// States
 	let interval = $state<number | undefined>();
-	let timer = $state(1500);
+	let timer = $state(1800);
 
 	let isWorking = $state(true);
 	let isRunning = $state(false);
 
-	let workingTime = $state(1500);
+	let workingTime = $state(1800);
 	let breakTime = $state(60);
 
 	// Derived
