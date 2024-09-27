@@ -79,6 +79,12 @@
 		if ("Notification" in window && Notification.permission === "granted") {
 			new Notification(
 				isWorking ? "¡Hora de descansar!" : "¡Hora de trabajar!",
+				{
+					body: isWorking
+						? `¡Es hora de descansar! Cuida tu enfoque y tu salud.`
+						: `¡Es hora de trabajar! A mover las manitas.`,
+					icon: isWorking ? "/imgs/rest.jpg" : "/imgs/focus.jpg",
+				},
 			);
 		}
 		try {
