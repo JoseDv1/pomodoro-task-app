@@ -27,6 +27,9 @@
 		cursor: pointer;
 		font-size: 1rem;
 		padding: 0.5rem 1rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 
 		&:hover {
 			background-color: #e0e0e0;

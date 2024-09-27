@@ -4,20 +4,22 @@
 	import playIcon from "../../assets/play.svg?raw";
 	import resetIcon from "../../assets/reset.svg?raw";
 	import nextIcon from "../../assets/next.svg?raw";
+	import stopIcon from "../../assets/pause.svg?raw";
 
 	// States
 	let interval = $state<number | undefined>();
-	let timer = $state(60 * 25);
+	let timer = $state(1500);
 
 	let isWorking = $state(true);
 	let isRunning = $state(false);
 
-	let workingTime = $state(25 * 60);
+	let workingTime = $state("1500");
 	let computedWTime = $derived(Number(workingTime));
 
 	let breakTime = $state("60");
 	let computedBTime = $derived(Number(breakTime));
 
+	// Derived
 	let timerDisplay = $derived(
 		`${Math.floor(timer / 60)}:${(timer % 60).toString().padStart(2, "0")}`,
 	);
@@ -89,13 +91,16 @@
 				<Button onclick={() => startTimer(computedWTime)} icon={playIcon}
 					>Iniciar</Button
 				>
-
-				<Button onclick={() => resetTimer(computedWTime)} icon={playIcon}
-					>Reiniciar</Button
-				>
 			{:else}
-				<Button onclick={() => stopTimer()} icon={playIcon}>Detener</Button>
-				<Button onclick={() => nextTimer()} icon={playIcon}>Siguiente</Button>
+				<Button onclick={() => stopTimer()} icon={stopIcon}>Detener</Button>
+				<Button onclick={() => nextTimer()} icon={nextIcon}>Siguiente</Button>
+			{/if}
+
+			{#if !isRunning && !(timer === Number(workingTime)) && !(timer === Number(breakTime) * 60)}
+				<Button
+					onclick={() => resetTimer(isWorking ? computedWTime : computedBTime)}
+					icon={resetIcon}>Reiniciar</Button
+				>
 			{/if}
 		</div>
 
