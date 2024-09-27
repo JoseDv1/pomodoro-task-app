@@ -1,10 +1,21 @@
 <script lang="ts">
 	import Button from "./Button.svelte";
-
 	import playIcon from "../../assets/play.svg?raw";
 	import resetIcon from "../../assets/reset.svg?raw";
 	import nextIcon from "../../assets/next.svg?raw";
 	import stopIcon from "../../assets/pause.svg?raw";
+
+	let times = [
+		{ name: "1 minuto", value: 60 },
+		{ name: "5 minutos", value: 300 },
+		{ name: "10 minutos", value: 600 },
+		{ name: "25 minutos", value: 1500 },
+		{ name: "30 minutos", value: 1800 },
+		{ name: "1 hora", value: 3600 },
+		{ name: "2 horas", value: 7200 },
+		{ name: "3 horas", value: 10800 },
+		{ name: "4 horas", value: 14400 },
+	];
 
 	// States
 	let interval = $state<number | undefined>();
@@ -13,11 +24,8 @@
 	let isWorking = $state(true);
 	let isRunning = $state(false);
 
-	let workingTime = $state("1500");
-	let computedWTime = $derived(Number(workingTime));
-
-	let breakTime = $state("60");
-	let computedBTime = $derived(Number(breakTime));
+	let workingTime = $state(1500);
+	let breakTime = $state(60);
 
 	// Derived
 	let timerDisplay = $derived(
@@ -38,12 +46,9 @@
 		}
 	}
 
-	function startTimer(time: number) {
+	function startTimer() {
 		// Limpiar el intervalo si ya existe
 		if (interval) clearInterval(interval);
-
-		// Iniciar el timer
-		setTimer(time);
 
 		// Iniciar el intervalo
 		interval = setInterval(updateTime, 1000);
@@ -65,10 +70,10 @@
 
 	function nextTimer() {
 		if (isWorking) {
-			setTimer(computedBTime);
+			setTimer(breakTime);
 			isWorking = false;
 		} else {
-			setTimer(computedWTime);
+			setTimer(workingTime);
 			isWorking = true;
 		}
 	}
@@ -76,11 +81,11 @@
 
 <main>
 	<header>
-		{#if isWorking}
-			<h2>Trabajando</h2>
-		{:else}
-			<h2>Descansando</h2>
-		{/if}
+		<h1>{isWorking ? "Trabajando" : "Descansando"}</h1>
+		<img
+			src={isWorking ? "/imgs/focus.jpg" : "/imgs/rest.jpg"}
+			alt="Tomatito"
+		/>
 	</header>
 
 	<h1>{timerDisplay}</h1>
@@ -88,9 +93,7 @@
 	<footer>
 		<div class="actions">
 			{#if !isRunning}
-				<Button onclick={() => startTimer(computedWTime)} icon={playIcon}
-					>Iniciar</Button
-				>
+				<Button onclick={() => startTimer()} icon={playIcon}>Iniciar</Button>
 			{:else}
 				<Button onclick={() => stopTimer()} icon={stopIcon}>Detener</Button>
 				<Button onclick={() => nextTimer()} icon={nextIcon}>Siguiente</Button>
@@ -98,7 +101,7 @@
 
 			{#if !isRunning && !(timer === Number(workingTime)) && !(timer === Number(breakTime) * 60)}
 				<Button
-					onclick={() => resetTimer(isWorking ? computedWTime : computedBTime)}
+					onclick={() => resetTimer(isWorking ? workingTime : breakTime)}
 					icon={resetIcon}>Reiniciar</Button
 				>
 			{/if}
@@ -107,24 +110,33 @@
 		<div class="selects">
 			<label>
 				Tiempo de trabajo
-				<select bind:value={workingTime}>
-					<option value="5">5 segundos</option>
-					<option value="60">1 minuto</option>
-					<option value="300">5 minutos</option>
-					<option value="600">10 minutos</option>
-					<option value="1500">25 minutos</option>
-					<option value="1800">30 minutos</option>
+				<select
+					bind:value={workingTime}
+					onchange={() => {
+						if (isWorking) {
+							setTimer(workingTime);
+						}
+					}}
+				>
+					{#each times as time}
+						<option value={time.value}>{time.name}</option>
+					{/each}
 				</select>
 			</label>
 
 			<label>
 				Tiempo de descanso
-				<select>
-					<option value="60">1 minuto</option>
-					<option value="300">5 minutos</option>
-					<option value="600">10 minutos</option>
-					<option value="900">15 minutos</option>
-					<option value="1200">20 minutos</option>
+				<select
+					bind:value={breakTime}
+					onchange={() => {
+						if (!isWorking) {
+							setTimer(breakTime);
+						}
+					}}
+				>
+					{#each times as time}
+						<option value={time.value}>{time.name}</option>
+					{/each}
 				</select>
 			</label>
 		</div>
@@ -137,7 +149,6 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		height: 100vh;
 	}
 
 	h1 {
@@ -149,6 +160,7 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		gap: 1rem;
 	}
 
 	.actions {
@@ -162,7 +174,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 1rem;
+		gap: 2rem;
 
 		label {
 			display: flex;
@@ -173,6 +185,26 @@
 	}
 
 	select {
-		padding: 0.5rem 1rem;
+		padding: 0.5rem;
+		border: none;
+		border-radius: 5px;
+		background-color: #ccc;
+		cursor: pointer;
+		font-size: 1rem;
+		color: black;
+	}
+
+	header {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+	}
+
+	img {
+		border-radius: 50%;
+		width: 50%;
+		aspect-ratio: 1/1;
 	}
 </style>
