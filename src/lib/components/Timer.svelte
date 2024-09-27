@@ -27,7 +27,7 @@
 	let isRunning = $state(false);
 
 	let workingTime = $state(1800);
-	let breakTime = $state(60);
+	let breakTime = $state(300);
 
 	// Derived
 	let timerDisplay = $derived(
@@ -100,7 +100,7 @@
 		}
 	}
 
-	onMount(() => {
+	$effect(() => {
 		Notification.requestPermission();
 	});
 </script>

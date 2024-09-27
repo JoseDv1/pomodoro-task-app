@@ -20,7 +20,7 @@
 	}
 
 	button {
-		background-color: #f5f5f5;
+		background-color: #dcdcdc;
 		border: none;
 		border-radius: 0.25rem;
 		color: #333;
@@ -35,6 +35,7 @@
 			background-color: #e0e0e0;
 		}
 	}
+
 
 
 </style>
