@@ -4,6 +4,7 @@
 	import resetIcon from "../../assets/reset.svg?raw";
 	import nextIcon from "../../assets/next.svg?raw";
 	import stopIcon from "../../assets/pause.svg?raw";
+	import { onMount } from "svelte";
 
 	let times = [
 		{ name: "1 minuto", value: 60 },
@@ -70,6 +71,22 @@
 	}
 
 	function nextTimer() {
+		// Reproducir sonido
+		const audio = new Audio("/sounds/alarm.wav");
+		audio.play();
+
+		// Enviar notificación
+		if ("Notification" in window && Notification.permission === "granted") {
+			new Notification(
+				isWorking ? "¡Hora de descansar!" : "¡Hora de trabajar!",
+			);
+		}
+		try {
+			// Enviar notificación
+		} catch (error) {
+			console.error(error);
+		}
+
 		if (isWorking) {
 			setTimer(breakTime);
 			isWorking = false;
@@ -78,6 +95,10 @@
 			isWorking = true;
 		}
 	}
+
+	onMount(() => {
+		Notification.requestPermission();
+	});
 </script>
 
 <main>
