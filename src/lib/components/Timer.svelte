@@ -1,18 +1,26 @@
 <script lang="ts">
+	import Button from "./Button.svelte";
+
+	import playIcon from "../../assets/play.svg?raw";
+	import resetIcon from "../../assets/reset.svg?raw";
+	import nextIcon from "../../assets/next.svg?raw";
+
 	// States
 	let interval = $state<number | undefined>();
-	let timer = $state(0);
-	let timerDisplay = $derived(
-		`${Math.floor(timer / 60)}:${(timer % 60).toString().padStart(2, "0")}`,
-	);
+	let timer = $state(60 * 25);
+
 	let isWorking = $state(true);
 	let isRunning = $state(false);
 
-	let workingTime = $state("60");
+	let workingTime = $state(25 * 60);
 	let computedWTime = $derived(Number(workingTime));
 
 	let breakTime = $state("60");
 	let computedBTime = $derived(Number(breakTime));
+
+	let timerDisplay = $derived(
+		`${Math.floor(timer / 60)}:${(timer % 60).toString().padStart(2, "0")}`,
+	);
 
 	// Functions
 	function setTimer(time: number) {
@@ -30,7 +38,7 @@
 
 	function startTimer(time: number) {
 		// Limpiar el intervalo si ya existe
-		if (!interval) clearInterval(interval);
+		if (interval) clearInterval(interval);
 
 		// Iniciar el timer
 		setTimer(time);
@@ -51,11 +59,6 @@
 	function resetTimer(intialTime: number) {
 		stopTimer();
 		setTimer(intialTime);
-	}
-
-	function resumeTimer() {
-		interval = setInterval(updateTime, 1000);
-		isRunning = true;
 	}
 
 	function nextTimer() {
@@ -83,26 +86,17 @@
 	<footer>
 		<div class="actions">
 			{#if !isRunning}
-				<button
-					onclick={() => startTimer(computedWTime)}
-					aria-label="Start timer for 4 seconds"
+				<Button onclick={() => startTimer(computedWTime)} icon={playIcon}
+					>Iniciar</Button
 				>
-					Iniciar
-				</button>
-				<button onclick={resumeTimer} aria-label="Resume timer">
-					Reanudar
-				</button>
-			{:else}
-				<button onclick={stopTimer} aria-label="Stop timer"> Detener </button>
-				<button onclick={nextTimer} aria-label="Stop timer"> Siguiente </button>
-			{/if}
 
-			<button
-				onclick={() => resetTimer(computedWTime)}
-				aria-label="Reset timer"
-			>
-				Reiniciar
-			</button>
+				<Button onclick={() => resetTimer(computedWTime)} icon={playIcon}
+					>Reiniciar</Button
+				>
+			{:else}
+				<Button onclick={() => stopTimer()} icon={playIcon}>Detener</Button>
+				<Button onclick={() => nextTimer()} icon={playIcon}>Siguiente</Button>
+			{/if}
 		</div>
 
 		<div class="selects">
@@ -113,6 +107,8 @@
 					<option value="60">1 minuto</option>
 					<option value="300">5 minutos</option>
 					<option value="600">10 minutos</option>
+					<option value="1500">25 minutos</option>
+					<option value="1800">30 minutos</option>
 				</select>
 			</label>
 
@@ -122,6 +118,8 @@
 					<option value="60">1 minuto</option>
 					<option value="300">5 minutos</option>
 					<option value="600">10 minutos</option>
+					<option value="900">15 minutos</option>
+					<option value="1200">20 minutos</option>
 				</select>
 			</label>
 		</div>
@@ -152,11 +150,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-	}
-
-	button {
-		padding: 0.5rem 1rem;
-		margin: 0.5rem;
+		gap: 1rem;
 	}
 
 	.selects {
