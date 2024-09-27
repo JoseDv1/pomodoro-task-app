@@ -1,227 +1,213 @@
 <script lang="ts">
-	import type { Pomodoro } from "../../types/main";
-	import play from "../../assets/play.svg?raw";
-	import pause from "../../assets/pause.svg?raw";
-	import reset from "../../assets/reset.svg?raw";
-	import next from "../../assets/next.svg?raw";
+	import Button from "./Button.svelte";
+	import playIcon from "../../assets/play.svg?raw";
+	import resetIcon from "../../assets/reset.svg?raw";
+	import nextIcon from "../../assets/next.svg?raw";
+	import stopIcon from "../../assets/pause.svg?raw";
+	import { onMount } from "svelte";
 
-	// Binding
-	let tiempo: string = "15";
-	let restTime: string = "5";
-	let running: boolean = false;
-	let resting: boolean = false;
+	let times = [
+		{ name: "1 minuto", value: 60 },
+		{ name: "5 minutos", value: 300 },
+		{ name: "10 minutos", value: 600 },
+		{ name: "15 minutos", value: 900 },
+		{ name: "30 minutos", value: 1800 },
+		{ name: "45 minutos", value: 2700 },
+		{ name: "1 hora", value: 3600 },
+		{ name: "2 horas", value: 7200 },
+		{ name: "3 horas", value: 10800 },
+		{ name: "4 horas", value: 14400 },
+	];
 
-	// Estados del timer
-	$: counterTime = Number(tiempo) * 60; // <-- Derived state from tiempo
+	// States
+	let interval = $state<number | undefined>();
+	let timer = $state(1800);
 
-	// Create a timer with the counterTime <-- Derived state from counterTime and tiempo
-	$: timer = `${Math.floor(counterTime / 60)}:${
-		counterTime % 60 < 10 ? "0" + (counterTime % 60) : counterTime % 60
-	}`;
+	let isWorking = $state(true);
+	let isRunning = $state(false);
+
+	let workingTime = $state(1800);
+	let breakTime = $state(60);
+
+	// Derived
+	let timerDisplay = $derived(
+		`${Math.floor(timer / 60)}:${(timer % 60).toString().padStart(2, "0")}`,
+	);
 
 	// Functions
-	let pomodoro: Pomodoro = createPomodoro();
-	function createPomodoro(): Pomodoro {
-		// Pomodoro Interval
-		let interval: number | null = null;
-		function endTimer() {
-			if (!resting) {
-				//Si Se acaba el Pomodoro
-				// Reproducir sonido
-				const audio = new Audio("sounds/alarm.wav");
-				audio.play();
-
-				// Mostrar notificacion
-				try {
-					new Notification("Pomodoro App", {
-						body: "Time is up!",
-						icon: "imgs/icons/tomato.png",
-					});
-				} catch (error) {
-					console.error("Notification error:", error);
-				}
-
-				// Mostrar descanso
-				resting = true;
-				counterTime = Number(restTime) * 60;
-			}
-			// Si estaba descansando termino, iniciar un nuevo pomodoro
-			else {
-				//Si Se acaba el descanso
-				resting = false;
-				counterTime = Number(tiempo) * 60;
-			}
-		}
-
-		const updateCounter = () => {
-			counterTime--;
-
-			// Verificar si el contador llego a 0 y empezar el descanso
-			if (counterTime <= 0) {
-				endTimer();
-			}
-		};
-
-		function startCounter() {
-			running = true;
-			clearInterval(interval as number);
-			interval = setInterval(updateCounter, 1000);
-		}
-
-		function stopCounter() {
-			clearInterval(interval as number);
-			interval = null;
-			running = false;
-		}
-
-		function toggleCounter() {
-			if (interval) {
-				stopCounter();
-			} else {
-				startCounter();
-			}
-		}
-
-		function reset() {
-			stopCounter();
-			if (resting) {
-				counterTime = Number(restTime) * 60;
-			} else {
-				counterTime = Number(tiempo) * 60;
-			}
-		}
-
-		function nextTimer() {
-			counterTime = 0;
-		}
-
-		return {
-			toggleCounter,
-			reset,
-			nextTimer,
-		};
+	function setTimer(time: number) {
+		timer = time;
 	}
+
+	function updateTime() {
+		timer -= 1;
+
+		// Siguiente estado de isWorking
+		if (timer === 0) {
+			nextTimer();
+		}
+	}
+
+	function startTimer() {
+		// Limpiar el intervalo si ya existe
+		if (interval) clearInterval(interval);
+
+		// Iniciar el intervalo
+		interval = setInterval(updateTime, 1000);
+
+		// Actualizar el estado de isRunning
+		isRunning = true;
+	}
+
+	function stopTimer() {
+		clearInterval(interval);
+		interval = undefined;
+		isRunning = false;
+	}
+
+	function resetTimer(intialTime: number) {
+		stopTimer();
+		setTimer(intialTime);
+	}
+
+	function nextTimer() {
+		// Reproducir sonido
+		const audio = new Audio("/sounds/alarm.wav");
+		audio.play();
+
+		try {
+			if ("Notification" in window && Notification.permission === "granted") {
+				new Notification(
+					isWorking ? "¡Hora de descansar!" : "¡Hora de trabajar!",
+					{
+						body: isWorking
+							? `¡Es hora de descansar! Cuida tu enfoque y tu salud.`
+							: `¡Es hora de trabajar! A mover las manitas.`,
+						icon: isWorking ? "/imgs/rest.jpg" : "/imgs/focus.jpg",
+					},
+				);
+			}
+		} catch (error) {
+			console.error(error);
+		}
+
+		if (isWorking) {
+			setTimer(breakTime);
+			isWorking = false;
+		} else {
+			setTimer(workingTime);
+			isWorking = true;
+		}
+	}
+
+	onMount(() => {
+		Notification.requestPermission();
+	});
 </script>
 
-<section>
-	<div class="timer">
-		<img src={resting ? "/imgs/rest.jpg" : "/imgs/focus.jpg"} alt="Tomatito" />
-		<h2>{resting ? "Rest" : "Focus!"}</h2>
-		<span>{timer}</span>
-	</div>
+<main>
+	<header>
+		<h1>{isWorking ? "Trabajando" : "Descansando"}</h1>
+		<img
+			src={isWorking ? "/imgs/focus.jpg" : "/imgs/rest.jpg"}
+			alt="Tomatito"
+		/>
+	</header>
 
-	<div class="btns">
-		{#if !running}
-			<label for="">
-				Focus Time
-				<select bind:value={tiempo} on:change={pomodoro.reset}>
-					<option value="0.05">3 Segundos</option>
-					<option value="0.25">15 Segundos</option>
-					<option value="0.5"> 30 Segundos</option>
-					<option value="5">5 Minutes</option>
-					<option value="10">10 Minutes</option>
-					<option value="15">15 Minutes</option>
-					<option value="25">25 Minutes</option>
-					<option value="30">30 Minutes</option>
-					<option value="35">35 Minutes</option>
-					<option value="40">40 Minutes</option>
-					<option value="45">45 Minutes</option>
-					<option value="50">50 Minutes</option>
-					<option value="55">55 Minutes</option>
-					<option value="60">60 Minutes</option>
-				</select>
-			</label>
+	<h1>{timerDisplay}</h1>
 
-			<label for="">
-				Rest Time
-
-				<select bind:value={restTime} on:change={pomodoro.reset}>
-					<option value="" selected disabled> Set Rest Time</option>
-					<option value="1">1 Minute</option>
-					<option value="2">2 Minutes</option>
-					<option value="3">3 Minutes</option>
-					<option value="5">5 Minutes</option>
-					<option value="10">10 Minutes</option>
-					<option value="15">15 Minutes</option>
-					<option value="30">30 Minutes</option>
-					<option value="45">45 Minutes</option>
-					<option value="60">60 Minutes</option>
-				</select>
-			</label>
-		{/if}
-		<button on:click={pomodoro.toggleCounter}>
-			{#if running}
-				{@html pause}
-				Pause
+	<footer>
+		<div class="actions">
+			{#if !isRunning}
+				<Button onclick={() => startTimer()} icon={playIcon}>Iniciar</Button>
 			{:else}
-				{@html play}
-				Play
+				<Button onclick={() => stopTimer()} icon={stopIcon}>Detener</Button>
+				<Button onclick={() => nextTimer()} icon={nextIcon}>Siguiente</Button>
 			{/if}
-		</button>
-		{#if !running && !(counterTime === Number(tiempo) * 60) && !(counterTime === Number(restTime) * 60)}
-			<button on:click={pomodoro.reset}>
-				{@html reset}
-				Reset</button
-			>
-		{/if}
-		{#if running}
-			<button on:click={pomodoro.nextTimer}>
-				{@html next}
-				Next</button
-			>
-		{/if}
-	</div>
-</section>
+
+			{#if !isRunning && !(timer === Number(workingTime)) && !(timer === Number(breakTime) * 60)}
+				<Button
+					onclick={() => resetTimer(isWorking ? workingTime : breakTime)}
+					icon={resetIcon}>Reiniciar</Button
+				>
+			{/if}
+		</div>
+
+		<div class="selects">
+			<label>
+				Tiempo de trabajo
+				<select
+					bind:value={workingTime}
+					onchange={() => {
+						if (isWorking) {
+							setTimer(workingTime);
+						}
+					}}
+				>
+					{#each times as time}
+						<option value={time.value}>{time.name}</option>
+					{/each}
+				</select>
+			</label>
+
+			<label>
+				Tiempo de descanso
+				<select
+					bind:value={breakTime}
+					onchange={() => {
+						if (!isWorking) {
+							setTimer(breakTime);
+						}
+					}}
+				>
+					{#each times as time}
+						<option value={time.value}>{time.name}</option>
+					{/each}
+				</select>
+			</label>
+		</div>
+	</footer>
+</main>
 
 <style>
-	section {
+	main {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		grid-column: 1 / 2;
-		grid-row: 1 / 3;
-		max-height: calc(100vh - 5rem);
 	}
 
-	.timer {
+	h1 {
 		font-size: 3rem;
-		flex: 1;
+	}
+
+	footer {
 		display: flex;
-		align-items: center;
-		justify-content: center;
 		flex-direction: column;
-	}
-
-	.timer img {
-		width: 10rem;
-		height: 10rem;
-		object-fit: cover;
-		object-position: center;
-	}
-
-	img {
-		width: 10rem;
-		height: 10rem;
-	}
-
-	.btns {
-		display: flex;
 		align-items: center;
 		justify-content: center;
-		text-align: center;
-		flex-wrap: wrap-reverse;
 		gap: 1rem;
 	}
 
-	label {
+	.actions {
 		display: flex;
-		flex-direction: column;
 		align-items: center;
+		justify-content: center;
+		gap: 1rem;
 	}
 
-	span {
-		font-size: 5rem;
+	.selects {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 2rem;
+
+		label {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+		}
 	}
 
 	select {
@@ -231,26 +217,20 @@
 		background-color: #ccc;
 		cursor: pointer;
 		font-size: 1rem;
+		color: black;
 	}
 
-	button {
-		padding: 0.5rem 1rem;
-		border: none;
-		border-radius: 5px;
-		background-color: #ccc;
-		cursor: pointer;
-		font-size: 1rem;
-		margin-top: 1.25rem;
+	header {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		gap: 0.5rem;
+		justify-content: center;
+		gap: 1rem;
+	}
 
-		&:hover {
-			background-color: #aaa;
-		}
-
-		&:active {
-			background-color: #888;
-		}
+	img {
+		border-radius: 50%;
+		width: 50%;
+		aspect-ratio: 1/1;
 	}
 </style>
