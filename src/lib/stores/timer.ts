@@ -19,10 +19,14 @@ export const isWorking = writable<boolean>(true);
 export const isRunning = writable<boolean>(false);
 export const workingTime = writable<number>(1800);
 export const breakTime = writable<number>(300);
-export const pomodoroCount = writable<number>(0);
-export const alarmVolume = writable<number>(0.5); // Nuevo estado para el volumen de la alarma
+export const pomodoroCount = writable<number>(
+	parseInt(window.localStorage.getItem("pomodoroCount") ?? "0", 10)
+);
+pomodoroCount.subscribe((count) => {
+	window.localStorage.setItem("pomodoroCount", count.toString());
+});
+export const alarmVolume = writable<number>(0.5);
 
-// Valor derivado para mostrar el tiempo formateado con horas cuando sea necesario
 export const timerDisplay = derived(timer, $timer => {
 	const hours = Math.floor($timer / 3600);
 	const minutes = Math.floor(($timer % 3600) / 60);
@@ -97,9 +101,9 @@ export function nextTimer() {
 
 	if (get(isWorking)) {
 		// Incrementamos el contador de pomodoros completados
-		const currentCount = get(pomodoroCount);
-		pomodoroCount.set(currentCount + 1);
-
+		pomodoroCount.update((count) => count + 1)
+		// Guardamos el contador en localStorage
+		window.localStorage.setItem("pomodoroCount", get(pomodoroCount).toString());
 		setTimer(get(breakTime));
 		isWorking.set(false);
 	} else {

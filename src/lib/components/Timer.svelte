@@ -29,7 +29,7 @@
 
 <main>
 	<header>
-		<h1>{$isWorking ? "Trabajando" : "Descansando"}</h1>
+		<h2>{$isWorking ? "Trabajando" : "Descansando"}</h2>
 		<img
 			src={$isWorking ? "/imgs/focus.jpg" : "/imgs/rest.jpg"}
 			alt="Tomatito"
@@ -44,7 +44,6 @@
 				<Button onclick={() => startTimer()} icon={playIcon}>Iniciar</Button>
 			{:else}
 				<Button onclick={() => stopTimer()} icon={stopIcon}>Detener</Button>
-				<Button onclick={() => nextTimer()} icon={nextIcon}>Siguiente</Button>
 			{/if}
 
 			{#if !$isRunning && !($timer === $workingTime) && !($timer === $breakTime)}
@@ -102,8 +101,8 @@
 		justify-content: center;
 	}
 
-	h1 {
-		font-size: 3rem;
+	h2 {
+		font-size: 2.5rem;
 		color: var(--text-primary);
 	}
 

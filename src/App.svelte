@@ -4,7 +4,6 @@
 	import PomodoroCounter from "./lib/components/PomodoroCounter.svelte";
 	import ThemeStore from "./lib/components/ThemeStore.svelte";
 	import Settings from "./lib/components/Settings.svelte";
-	import { activeThemeId } from "./lib/stores/theme";
 
 	$effect(() => {
 		if (typeof window !== "undefined" && "Notification" in window) {
