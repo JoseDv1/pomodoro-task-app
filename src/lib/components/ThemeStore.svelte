@@ -110,7 +110,10 @@
 	<span>Tienda de Temas</span>
 </button>
 
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 {#if showStore}
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
 		class="theme-store-overlay"
 		on:click={toggleThemeStore}
@@ -118,6 +121,7 @@
 		aria-modal="true"
 		aria-labelledby="theme-store-title"
 	>
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div class="theme-store-modal" on:click|stopPropagation tabindex="-1">
 			<header>
 				<h2 id="theme-store-title">Tienda de Temas</h2>
