@@ -4,102 +4,24 @@
 	import resetIcon from "../../assets/reset.svg?raw";
 	import nextIcon from "../../assets/next.svg?raw";
 	import stopIcon from "../../assets/pause.svg?raw";
-	import { onMount } from "svelte";
 
-	let times = [
-		{ name: "1 minuto", value: 60 },
-		{ name: "5 minutos", value: 300 },
-		{ name: "10 minutos", value: 600 },
-		{ name: "15 minutos", value: 900 },
-		{ name: "30 minutos", value: 1800 },
-		{ name: "45 minutos", value: 2700 },
-		{ name: "1 hora", value: 3600 },
-		{ name: "2 horas", value: 7200 },
-		{ name: "3 horas", value: 10800 },
-		{ name: "4 horas", value: 14400 },
-	];
+	// Importamos todo desde el store
+	import {
+		breakTime,
+		stopTimer,
+		resetTimer,
+		setTimer,
+		startTimer,
+		isRunning,
+		timerDisplay,
+		isWorking,
+		timer,
+		nextTimer,
+		times,
+		workingTime,
+	} from "../stores/timer";
 
-	// States
-	let interval = $state<number | undefined>();
-	let timer = $state(1800);
-
-	let isWorking = $state(true);
-	let isRunning = $state(false);
-
-	let workingTime = $state(1800);
-	let breakTime = $state(300);
-
-	// Derived
-	let timerDisplay = $derived(
-		`${Math.floor(timer / 60)}:${(timer % 60).toString().padStart(2, "0")}`,
-	);
-
-	// Functions
-	function setTimer(time: number) {
-		timer = time;
-	}
-
-	function updateTime() {
-		timer -= 1;
-
-		// Siguiente estado de isWorking
-		if (timer === 0) {
-			nextTimer();
-		}
-	}
-
-	function startTimer() {
-		// Limpiar el intervalo si ya existe
-		if (interval) clearInterval(interval);
-
-		// Iniciar el intervalo
-		interval = setInterval(updateTime, 1000);
-
-		// Actualizar el estado de isRunning
-		isRunning = true;
-	}
-
-	function stopTimer() {
-		clearInterval(interval);
-		interval = undefined;
-		isRunning = false;
-	}
-
-	function resetTimer(intialTime: number) {
-		stopTimer();
-		setTimer(intialTime);
-	}
-
-	function nextTimer() {
-		// Reproducir sonido
-		const audio = new Audio("/sounds/alarm.wav");
-		audio.play();
-
-		try {
-			if ("Notification" in window && Notification.permission === "granted") {
-				new Notification(
-					isWorking ? "¡Hora de descansar!" : "¡Hora de trabajar!",
-					{
-						body: isWorking
-							? `¡Es hora de descansar! Cuida tu enfoque y tu salud.`
-							: `¡Es hora de trabajar! A mover las manitas.`,
-						icon: isWorking ? "/imgs/rest.jpg" : "/imgs/focus.jpg",
-					},
-				);
-			}
-		} catch (error) {
-			console.error(error);
-		}
-
-		if (isWorking) {
-			setTimer(breakTime);
-			isWorking = false;
-		} else {
-			setTimer(workingTime);
-			isWorking = true;
-		}
-	}
-
+	// Aseguramos que las notificaciones estén habilitadas
 	$effect(() => {
 		Notification.requestPermission();
 	});
@@ -107,29 +29,30 @@
 
 <main>
 	<header>
-		<h1>{isWorking ? "Trabajando" : "Descansando"}</h1>
+		<h1>{$isWorking ? "Trabajando" : "Descansando"}</h1>
 		<img
-			src={isWorking ? "/imgs/focus.jpg" : "/imgs/rest.jpg"}
+			src={$isWorking ? "/imgs/focus.jpg" : "/imgs/rest.jpg"}
 			alt="Tomatito"
 		/>
 	</header>
 
-	<h1>{timerDisplay}</h1>
+	<h1>{$timerDisplay}</h1>
 
 	<footer>
 		<div class="actions">
-			{#if !isRunning}
+			{#if !$isRunning}
 				<Button onclick={() => startTimer()} icon={playIcon}>Iniciar</Button>
 			{:else}
 				<Button onclick={() => stopTimer()} icon={stopIcon}>Detener</Button>
 				<Button onclick={() => nextTimer()} icon={nextIcon}>Siguiente</Button>
 			{/if}
 
-			{#if !isRunning && !(timer === Number(workingTime)) && !(timer === Number(breakTime) * 60)}
+			{#if !$isRunning && !($timer === $workingTime) && !($timer === $breakTime)}
 				<Button
-					onclick={() => resetTimer(isWorking ? workingTime : breakTime)}
-					icon={resetIcon}>Reiniciar</Button
-				>
+					onclick={() => resetTimer($isWorking ? $workingTime : $breakTime)}
+					icon={resetIcon}
+					>Reiniciar
+				</Button>
 			{/if}
 		</div>
 
@@ -137,37 +60,39 @@
 			<label>
 				Tiempo de trabajo
 				<select
-					bind:value={workingTime}
+					bind:value={$workingTime}
 					onchange={() => {
 						if (isWorking) {
-							setTimer(workingTime);
+							setTimer($workingTime);
 						}
 					}}
 				>
-					{#each times as time}
-						<option value={time.value}>{time.name}</option>
-					{/each}
+					{@render timerOptions()}
 				</select>
 			</label>
 
 			<label>
 				Tiempo de descanso
 				<select
-					bind:value={breakTime}
+					bind:value={$breakTime}
 					onchange={() => {
-						if (!isWorking) {
-							setTimer(breakTime);
+						if (!$isWorking) {
+							setTimer($breakTime);
 						}
 					}}
 				>
-					{#each times as time}
-						<option value={time.value}>{time.name}</option>
-					{/each}
+					{@render timerOptions()}
 				</select>
 			</label>
 		</div>
 	</footer>
 </main>
+
+{#snippet timerOptions()}
+	{#each times as time}
+		<option value={time.value}>{time.name}</option>
+	{/each}
+{/snippet}
 
 <style>
 	main {
@@ -179,6 +104,7 @@
 
 	h1 {
 		font-size: 3rem;
+		color: var(--text-primary);
 	}
 
 	footer {
@@ -212,12 +138,17 @@
 
 	select {
 		padding: 0.5rem;
-		border: none;
+		border: 1px solid var(--border-color);
 		border-radius: 5px;
-		background-color: #ccc;
+		background-color: var(--bg-secondary);
 		cursor: pointer;
 		font-size: 1rem;
-		color: black;
+		color: var(--text-primary);
+		transition: all 0.3s ease;
+	}
+
+	select:hover {
+		border-color: var(--accent-color);
 	}
 
 	header {
