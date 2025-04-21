@@ -70,6 +70,7 @@
 		aria-modal="true"
 		aria-labelledby="settings-title"
 	>
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div class="settings-modal" on:click|stopPropagation tabindex="-1">
 			<header>
 				<h2 id="settings-title">Configuración</h2>

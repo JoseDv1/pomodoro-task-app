@@ -181,6 +181,153 @@ export const availableThemes: Theme[] = [
 			'--border-color': 'rgba(255, 255, 255, 0.15)',
 			'--shadow-color': 'rgba(0, 0, 0, 0.3)'
 		}
+	},
+	{
+		id: 'midnight-purple',
+		name: 'Púrpura Medianoche',
+		description: 'Elegante tema púrpura oscuro para una concentración profunda en ambientes nocturnos.',
+		previewColor: '#2E1A47',
+		price: 25,
+		unlocked: false,
+		cssProperties: {
+			'--bg-primary': '#2E1A47',
+			'--bg-secondary': '#1E0F2E',
+			'--bg-tertiary': '#3E2860',
+			'--text-primary': '#E6D7FF',
+			'--text-secondary': '#B79FE0',
+			'--accent-color': '#9D4EDD',
+			'--button-bg': '#3E2860',
+			'--button-hover': '#4F3575',
+			'--card-bg': 'rgba(255, 255, 255, 0.08)',
+			'--border-color': 'rgba(255, 255, 255, 0.12)',
+			'--shadow-color': 'rgba(0, 0, 0, 0.35)'
+		}
+	},
+	{
+		id: 'coffee-break',
+		name: 'Pausa Café',
+		description: 'Cálidos tonos café y crema para una productividad acogedora y relajada.',
+		previewColor: '#4A3B2F',
+		price: 15,
+		unlocked: false,
+		cssProperties: {
+			'--bg-primary': '#4A3B2F',
+			'--bg-secondary': '#3A2E25',
+			'--bg-tertiary': '#5A493C',
+			'--text-primary': '#F2E9D8',
+			'--text-secondary': '#D9C5A9',
+			'--accent-color': '#BF8756',
+			'--button-bg': '#5A493C',
+			'--button-hover': '#6A594C',
+			'--card-bg': 'rgba(242, 233, 216, 0.1)',
+			'--border-color': 'rgba(242, 233, 216, 0.15)',
+			'--shadow-color': 'rgba(0, 0, 0, 0.25)'
+		}
+	},
+	{
+		id: 'cyber-neon',
+		name: 'Neón Cibernético',
+		description: 'Futurista tema con colores neón brillantes sobre fondo oscuro para sesiones nocturnas energizantes.',
+		previewColor: '#0D0D15',
+		price: 30,
+		unlocked: false,
+		cssProperties: {
+			'--bg-primary': '#0D0D15',
+			'--bg-secondary': '#08080E',
+			'--bg-tertiary': '#15152A',
+			'--text-primary': '#F0F8FF',
+			'--text-secondary': '#C0D8FF',
+			'--accent-color': '#00F5FF',
+			'--button-bg': '#15152A',
+			'--button-hover': '#1E1E3A',
+			'--card-bg': 'rgba(0, 245, 255, 0.05)',
+			'--border-color': 'rgba(0, 245, 255, 0.2)',
+			'--shadow-color': 'rgba(0, 245, 255, 0.15)'
+		}
+	},
+	{
+		id: 'forest-symphony',
+		name: 'Sinfonía Forestal',
+		description: 'Diversas tonalidades de verde que evocan un paseo tranquilo por un bosque revitalizante.',
+		previewColor: '#1E392A',
+		price: 22,
+		unlocked: false,
+		cssProperties: {
+			'--bg-primary': '#1E392A',
+			'--bg-secondary': '#152D20',
+			'--bg-tertiary': '#2A4F3A',
+			'--text-primary': '#E8F5ED',
+			'--text-secondary': '#B7DBCA',
+			'--accent-color': '#5FAD7B',
+			'--button-bg': '#2A4F3A',
+			'--button-hover': '#356049',
+			'--card-bg': 'rgba(232, 245, 237, 0.08)',
+			'--border-color': 'rgba(232, 245, 237, 0.12)',
+			'--shadow-color': 'rgba(0, 0, 0, 0.2)'
+		}
+	},
+	{
+		id: 'golden-desert',
+		name: 'Desierto Dorado',
+		description: 'Inspirado en las dunas doradas y atardeceres del desierto para un ambiente cálido y acogedor.',
+		previewColor: '#B8860B',
+		price: 20,
+		unlocked: false,
+		cssProperties: {
+			'--bg-primary': '#B8860B',
+			'--bg-secondary': '#996D09',
+			'--bg-tertiary': '#D9A11D',
+			'--text-primary': '#FFF8E8',
+			'--text-secondary': '#FFE9B8',
+			'--accent-color': '#FF8C00',
+			'--button-bg': '#D9A11D',
+			'--button-hover': '#EDAF1E',
+			'--card-bg': 'rgba(255, 248, 232, 0.15)',
+			'--border-color': 'rgba(255, 248, 232, 0.2)',
+			'--shadow-color': 'rgba(0, 0, 0, 0.15)'
+		}
+	},
+	{
+		id: 'arctic-frost',
+		name: 'Escarcha Ártica',
+		description: 'Tonos fríos de azul y blanco que evocan la calma y claridad de un paisaje helado.',
+		previewColor: '#D6EAF8',
+		price: 17,
+		unlocked: false,
+		cssProperties: {
+			'--bg-primary': '#D6EAF8',
+			'--bg-secondary': '#E5F1F8',
+			'--bg-tertiary': '#BED8F0',
+			'--text-primary': '#1A5276',
+			'--text-secondary': '#2874A6',
+			'--accent-color': '#3498DB',
+			'--button-bg': '#BED8F0',
+			'--button-hover': '#A5C6E8',
+			'--card-bg': 'rgba(26, 82, 118, 0.08)',
+			'--border-color': 'rgba(26, 82, 118, 0.15)',
+			'--shadow-color': 'rgba(0, 0, 0, 0.1)'
+		}
+	},
+	{
+		id: 'sakura-bloom',
+		name: 'Flor de Cerezo',
+		description: 'Delicados tonos rosados inspirados en la floración de los cerezos japoneses para un ambiente sereno.',
+		previewColor: '#FFD7E9',
+		price: 24,
+		unlocked: false,
+		cssProperties: {
+			'--bg-primary': '#FFD7E9',
+			'--bg-secondary': '#FFE4F1',
+			'--bg-tertiary': '#FFBDDD',
+			'--text-primary': '#8E3A5C',
+			'--text-secondary': '#B25F87',
+			'--accent-color': '#FF66B2',
+			'--button-bg': '#FFBDDD',
+			'--button-hover': '#FFAED3',
+			'--card-bg': 'rgba(142, 58, 92, 0.08)',
+			'--border-color': 'rgba(142, 58, 92, 0.15)',
+			'--shadow-color': 'rgba(0, 0, 0, 0.1)'
+		}
 	}
 ];
 
