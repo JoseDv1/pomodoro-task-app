@@ -98,27 +98,7 @@ export const availableThemes: Theme[] = [
 			'--shadow-color': 'rgba(0, 0, 0, 0.3)'
 		}
 	},
-	{
-		id: 'sunset-orange',
-		name: 'Atardecer',
-		description: 'Tema inspirado en un cálido atardecer para terminar el día productivamente.',
-		previewColor: '#4a3833',
-		price: 15,
-		unlocked: false,
-		cssProperties: {
-			'--bg-primary': '#4a3833',
-			'--bg-secondary': '#382a27',
-			'--bg-tertiary': '#5c4840',
-			'--text-primary': '#ffe0d1',
-			'--text-secondary': '#dbbcb0',
-			'--accent-color': '#ff7f50',
-			'--button-bg': '#5c4840',
-			'--button-hover': '#6d5a50',
-			'--card-bg': 'rgba(255, 255, 255, 0.1)',
-			'--border-color': 'rgba(255, 255, 255, 0.15)',
-			'--shadow-color': 'rgba(0, 0, 0, 0.3)'
-		}
-	},
+
 	{
 		id: 'bubblegum',
 		name: 'Chicle',
@@ -161,27 +141,7 @@ export const availableThemes: Theme[] = [
 			'--shadow-color': 'rgba(0, 0, 0, 0.1)'
 		}
 	},
-	{
-		id: 'ruby-red',
-		name: 'Rubí',
-		description: 'Un vibrante tema rojo para potenciar la energía y la motivación.',
-		previewColor: '#8B0000',
-		price: 18,
-		unlocked: false,
-		cssProperties: {
-			'--bg-primary': '#8B0000',
-			'--bg-secondary': '#700000',
-			'--bg-tertiary': '#A50000',
-			'--text-primary': '#FFE4E1',
-			'--text-secondary': '#FFC0CB',
-			'--accent-color': '#FF4500',
-			'--button-bg': '#A50000',
-			'--button-hover': '#BF0000',
-			'--card-bg': 'rgba(255, 255, 255, 0.1)',
-			'--border-color': 'rgba(255, 255, 255, 0.15)',
-			'--shadow-color': 'rgba(0, 0, 0, 0.3)'
-		}
-	},
+
 	{
 		id: 'midnight-purple',
 		name: 'Púrpura Medianoche',
@@ -245,27 +205,7 @@ export const availableThemes: Theme[] = [
 			'--shadow-color': 'rgba(0, 245, 255, 0.15)'
 		}
 	},
-	{
-		id: 'forest-symphony',
-		name: 'Sinfonía Forestal',
-		description: 'Diversas tonalidades de verde que evocan un paseo tranquilo por un bosque revitalizante.',
-		previewColor: '#1E392A',
-		price: 22,
-		unlocked: false,
-		cssProperties: {
-			'--bg-primary': '#1E392A',
-			'--bg-secondary': '#152D20',
-			'--bg-tertiary': '#2A4F3A',
-			'--text-primary': '#E8F5ED',
-			'--text-secondary': '#B7DBCA',
-			'--accent-color': '#5FAD7B',
-			'--button-bg': '#2A4F3A',
-			'--button-hover': '#356049',
-			'--card-bg': 'rgba(232, 245, 237, 0.08)',
-			'--border-color': 'rgba(232, 245, 237, 0.12)',
-			'--shadow-color': 'rgba(0, 0, 0, 0.2)'
-		}
-	},
+
 	{
 		id: 'golden-desert',
 		name: 'Desierto Dorado',
@@ -308,27 +248,6 @@ export const availableThemes: Theme[] = [
 			'--shadow-color': 'rgba(0, 0, 0, 0.1)'
 		}
 	},
-	{
-		id: 'sakura-bloom',
-		name: 'Flor de Cerezo',
-		description: 'Delicados tonos rosados inspirados en la floración de los cerezos japoneses para un ambiente sereno.',
-		previewColor: '#FFD7E9',
-		price: 24,
-		unlocked: false,
-		cssProperties: {
-			'--bg-primary': '#FFD7E9',
-			'--bg-secondary': '#FFE4F1',
-			'--bg-tertiary': '#FFBDDD',
-			'--text-primary': '#8E3A5C',
-			'--text-secondary': '#B25F87',
-			'--accent-color': '#FF66B2',
-			'--button-bg': '#FFBDDD',
-			'--button-hover': '#FFAED3',
-			'--card-bg': 'rgba(142, 58, 92, 0.08)',
-			'--border-color': 'rgba(142, 58, 92, 0.15)',
-			'--shadow-color': 'rgba(0, 0, 0, 0.1)'
-		}
-	}
 ];
 
 // Función para cargar temas desbloqueados desde localStorage
