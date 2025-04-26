@@ -48,7 +48,7 @@
 			"icons": [{ "src": "imgs/icons/tomato.png", "sizes": "512x512" }]
 		}
 	],
-	"related_applications": [],
 	"prefer_related_applications": false,
-	"permissions": ["notifications", "background-sync"]
+	"permissions": ["notifications", "background-sync"],
+	"display_override": ["window-controls-overlay", "standalone", "browser"]
 }
