@@ -21,10 +21,59 @@
 		workingTime,
 	} from "../stores/timer";
 
-	// Aseguramos que las notificaciones estén habilitadas
-	$effect(() => {
-		Notification.requestPermission();
-	});
+	// Función para solicitar permisos de notificación (se llamará con clic de usuario)
+	function requestNotificationPermission() {
+		if ("Notification" in window) {
+			Notification.requestPermission().then((permission) => {
+				console.log("Permiso de notificación:", permission);
+			});
+		}
+	}
+
+	// Función para iniciar el temporizador también en el Service Worker
+	function startTimerWithServiceWorker() {
+		// Solicitar permisos de notificación al iniciar el temporizador (acción de usuario)
+		requestNotificationPermission();
+
+		startTimer(); // Inicia el temporizador localmente
+
+		// Enviar mensaje al Service Worker para que también ejecute el temporizador
+		if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+			navigator.serviceWorker.controller.postMessage({
+				action: "START_TIMER",
+				duration: $timer,
+				type: $isWorking ? "work" : "break",
+			});
+		}
+	}
+
+	// Función para detener el temporizador también en el Service Worker
+	function stopTimerWithServiceWorker() {
+		stopTimer(); // Detiene el temporizador localmente
+
+		// Enviar mensaje al Service Worker para que detenga el temporizador
+		if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+			navigator.serviceWorker.controller.postMessage({
+				action: "STOP_TIMER",
+			});
+		}
+	}
+
+	// Función para cambiar al siguiente temporizador con Service Worker
+	function nextTimerWithServiceWorker() {
+		nextTimer(); // Cambia el temporizador localmente
+
+		// Si estamos iniciando el temporizador, enviamos mensaje al Service Worker
+		if ($isRunning) {
+			if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+				navigator.serviceWorker.controller.postMessage({
+					action: "START_TIMER",
+					duration: $timer,
+					type: $isWorking ? "work" : "break",
+				});
+			}
+		}
+	}
 </script>
 
 <main>
@@ -41,9 +90,13 @@
 	<footer>
 		<div class="actions">
 			{#if !$isRunning}
-				<Button onclick={() => startTimer()} icon={playIcon}>Iniciar</Button>
+				<Button onclick={() => startTimerWithServiceWorker()} icon={playIcon}
+					>Iniciar</Button
+				>
 			{:else}
-				<Button onclick={() => stopTimer()} icon={stopIcon}>Detener</Button>
+				<Button onclick={() => stopTimerWithServiceWorker()} icon={stopIcon}
+					>Detener</Button
+				>
 			{/if}
 
 			{#if !$isRunning && !($timer === $workingTime) && !($timer === $breakTime)}

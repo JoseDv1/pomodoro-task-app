@@ -60,9 +60,18 @@ export function startTimer() {
 	const currentInterval = get(interval);
 	if (currentInterval) clearInterval(currentInterval);
 
-	const newInterval = setInterval(updateTime, 1000);
+	const newInterval = setInterval(updateTime, 1000) as unknown as number;
 	interval.set(newInterval);
 	isRunning.set(true);
+
+	// Comunicar con el Service Worker
+	if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+		navigator.serviceWorker.controller.postMessage({
+			action: 'START_TIMER',
+			duration: get(timer),
+			type: get(isWorking) ? 'work' : 'break'
+		});
+	}
 }
 
 export function stopTimer() {
@@ -70,6 +79,13 @@ export function stopTimer() {
 	if (currentInterval) clearInterval(currentInterval);
 	interval.set(undefined);
 	isRunning.set(false);
+
+	// Comunicar con el Service Worker
+	if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+		navigator.serviceWorker.controller.postMessage({
+			action: 'STOP_TIMER'
+		});
+	}
 }
 
 export function resetTimer(initialTime: number) {
@@ -109,6 +125,39 @@ export function nextTimer() {
 	} else {
 		setTimer(get(workingTime));
 		isWorking.set(true);
+	}
+
+	// Si el temporizador estaba en marcha, comenzamos el nuevo temporizador
+	// también en el Service Worker
+	if (get(isRunning)) {
+		if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+			navigator.serviceWorker.controller.postMessage({
+				action: 'START_TIMER',
+				duration: get(timer),
+				type: get(isWorking) ? 'work' : 'break'
+			});
+		}
+	}
+}
+
+// Función para actualizar el timer desde el Service Worker
+export function syncTimerWithServiceWorker(timeLeft: number, isActive: boolean, isWork: boolean) {
+	// Actualizar el tiempo restante
+	timer.set(timeLeft);
+
+	// Actualizar el estado de trabajo/descanso
+	isWorking.set(isWork);
+
+	// Actualizar el estado de ejecución
+	isRunning.set(isActive);
+
+	// Si está activo, asegurarse de que el temporizador local esté en marcha
+	if (isActive) {
+		const currentInterval = get(interval);
+		if (currentInterval) clearInterval(currentInterval);
+
+		const newInterval = setInterval(updateTime, 1000) as unknown as number;
+		interval.set(newInterval);
 	}
 }
 

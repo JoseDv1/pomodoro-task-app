@@ -5,11 +5,8 @@
 	import ThemeStore from "./lib/components/ThemeStore.svelte";
 	import Settings from "./lib/components/Settings.svelte";
 
-	$effect(() => {
-		if (typeof window !== "undefined" && "Notification" in window) {
-			Notification.requestPermission();
-		}
-	});
+	// No solicitar permiso de notificación automáticamente,
+	// esto debe hacerse en respuesta a un clic del usuario
 
 	// Aplicar clase para la transición al cambiar de tema
 	$effect(() => {
