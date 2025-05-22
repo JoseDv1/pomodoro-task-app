@@ -19,6 +19,10 @@
 		nextTimer,
 		times,
 		workingTime,
+		// Added for Long Break feature
+		currentPomodoroCycle,
+		pomodorosPerLongBreak,
+		isLongBreak,
 	} from "../stores/timer";
 
 	// Función para solicitar permisos de notificación (se llamará con clic de usuario)
@@ -78,7 +82,20 @@
 
 <main>
 	<header>
-		<h2>{$isWorking ? "Trabajando" : "Descansando"}</h2>
+		<h2>
+			{#if $isWorking}
+				Trabajando
+			{:else if $isLongBreak}
+				Descanso Largo
+			{:else}
+				Descansando
+			{/if}
+		</h2>
+		{#if $isWorking && $pomodorosPerLongBreak > 0}
+			<p class="cycle-info">
+				Pomodoro {$currentPomodoroCycle + 1} de {$pomodorosPerLongBreak}
+			</p>
+		{/if}
 		<img
 			src={$isWorking ? "/imgs/focus.jpg" : "/imgs/rest.jpg"}
 			alt="Tomatito"
@@ -152,11 +169,20 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		text-align: center; /* Ensure text elements like h2 and p are centered */
 	}
 
 	h2 {
 		font-size: 2.5rem;
 		color: var(--text-primary);
+		margin-bottom: 0.25rem; /* Reduced margin if cycle info is present */
+	}
+
+	.cycle-info {
+		font-size: 1rem;
+		color: var(--text-secondary);
+		margin-top: -0.5rem; /* Adjust to bring closer to h2 */
+		margin-bottom: 0.75rem; /* Space before the image */
 	}
 
 	footer {

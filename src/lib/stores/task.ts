@@ -21,6 +21,16 @@ export const addTask = (task: Task) => {
 		return updatedTasks;
 	});
 }
+
+export const editTask = (id: string, newName: string) => {
+	tasks.update((tasks) => {
+		const taskIndex = tasks.findIndex((task) => task.id === id);
+		if (taskIndex === -1) return tasks;
+		if (newName.trim() === "") return tasks; // Do not update if newName is empty
+		tasks[taskIndex].name = newName.trim();
+		return tasks;
+	});
+}
 export const removeTask = (id: string) => {
 	tasks.update((tasks) => {
 		const updatedTasks = tasks.filter((task) => task.id !== id);

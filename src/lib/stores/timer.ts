@@ -17,8 +17,18 @@ export const interval = writable<number | undefined>(undefined);
 export const timer = writable<number>(1800);
 export const isWorking = writable<boolean>(true);
 export const isRunning = writable<boolean>(false);
-export const workingTime = writable<number>(1800);
-export const breakTime = writable<number>(300);
+export const workingTime = writable<number>(
+	parseInt(window.localStorage.getItem("workingTime") ?? "1800", 10)
+);
+workingTime.subscribe((value) => {
+	window.localStorage.setItem("workingTime", value.toString());
+});
+export const breakTime = writable<number>(
+	parseInt(window.localStorage.getItem("breakTime") ?? "300", 10)
+);
+breakTime.subscribe((value) => {
+	window.localStorage.setItem("breakTime", value.toString());
+});
 export const pomodoroCount = writable<number>(
 	parseInt(window.localStorage.getItem("pomodoroCount") ?? "0", 10)
 );
@@ -26,6 +36,30 @@ pomodoroCount.subscribe((count) => {
 	window.localStorage.setItem("pomodoroCount", count.toString());
 });
 export const alarmVolume = writable<number>(0.5);
+
+// Long Break related stores
+export const longBreakTime = writable<number>(
+	parseInt(window.localStorage.getItem("longBreakTime") ?? "900", 10)
+);
+longBreakTime.subscribe((value) => {
+	window.localStorage.setItem("longBreakTime", value.toString());
+});
+
+export const pomodorosPerLongBreak = writable<number>(
+	parseInt(window.localStorage.getItem("pomodorosPerLongBreak") ?? "4", 10)
+);
+pomodorosPerLongBreak.subscribe((value) => {
+	window.localStorage.setItem("pomodorosPerLongBreak", value.toString());
+});
+
+export const currentPomodoroCycle = writable<number>(
+	parseInt(window.localStorage.getItem("currentPomodoroCycle") ?? "0", 10)
+);
+currentPomodoroCycle.subscribe((value) => {
+	window.localStorage.setItem("currentPomodoroCycle", value.toString());
+});
+
+export const isLongBreak = writable<boolean>(false); // Not persisted
 
 export const timerDisplay = derived(timer, $timer => {
 	const hours = Math.floor($timer / 3600);
@@ -99,32 +133,52 @@ export function nextTimer() {
 	audio.volume = get(alarmVolume); // Usar el volumen configurado por el usuario
 	audio.play();
 
+	const currentlyWorking = get(isWorking);
+	let notificationTitle = "";
+	let notificationBody = "";
+	let notificationIcon = "";
+
+	if (currentlyWorking) {
+		// Work session ended
+		pomodoroCount.update((count) => count + 1);
+		currentPomodoroCycle.update((cycle) => cycle + 1);
+		isWorking.set(false);
+
+		if (get(pomodorosPerLongBreak) > 0 && get(currentPomodoroCycle) >= get(pomodorosPerLongBreak)) {
+			// Time for a long break
+			setTimer(get(longBreakTime));
+			currentPomodoroCycle.set(0);
+			isLongBreak.set(true);
+			notificationTitle = "¡Hora de un descanso largo!";
+			notificationBody = "¡Buen trabajo! Tómate un respiro más largo.";
+			notificationIcon = "/imgs/rest.jpg"; // Or a specific long break image
+		} else {
+			// Time for a short break
+			setTimer(get(breakTime));
+			isLongBreak.set(false);
+			notificationTitle = "¡Hora de descansar!";
+			notificationBody = "¡Es hora de descansar! Cuida tu enfoque y tu salud.";
+			notificationIcon = "/imgs/rest.jpg";
+		}
+	} else {
+		// Break session ended
+		setTimer(get(workingTime));
+		isWorking.set(true);
+		isLongBreak.set(false); // Reset long break status
+		notificationTitle = "¡Hora de trabajar!";
+		notificationBody = "¡Es hora de trabajar! A mover las manitas.";
+		notificationIcon = "/imgs/focus.jpg";
+	}
+
 	try {
 		if ("Notification" in window && Notification.permission === "granted") {
-			new Notification(
-				get(isWorking) ? "¡Hora de descansar!" : "¡Hora de trabajar!",
-				{
-					body: get(isWorking)
-						? `¡Es hora de descansar! Cuida tu enfoque y tu salud.`
-						: `¡Es hora de trabajar! A mover las manitas.`,
-					icon: get(isWorking) ? "/imgs/rest.jpg" : "/imgs/focus.jpg",
-				}
-			);
+			new Notification(notificationTitle, {
+				body: notificationBody,
+				icon: notificationIcon,
+			});
 		}
 	} catch (error) {
 		console.error(error);
-	}
-
-	if (get(isWorking)) {
-		// Incrementamos el contador de pomodoros completados
-		pomodoroCount.update((count) => count + 1)
-		// Guardamos el contador en localStorage
-		window.localStorage.setItem("pomodoroCount", get(pomodoroCount).toString());
-		setTimer(get(breakTime));
-		isWorking.set(false);
-	} else {
-		setTimer(get(workingTime));
-		isWorking.set(true);
 	}
 
 	// Si el temporizador estaba en marcha, comenzamos el nuevo temporizador

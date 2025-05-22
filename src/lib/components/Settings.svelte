@@ -1,9 +1,21 @@
 <script lang="ts">
-	import { alarmVolume } from "../stores/timer";
+	import {
+		alarmVolume,
+		times,
+		workingTime,
+		breakTime,
+		longBreakTime,
+		pomodorosPerLongBreak
+	} from "../stores/timer";
 	import { onMount } from "svelte";
 
 	let showSettings = false;
 	let volume = $alarmVolume;
+	// Bind directly to store values for simplicity in the template
+	// $: localWorkingTime = $workingTime;
+	// $: localBreakTime = $breakTime;
+	// $: localLongBreakTime = $longBreakTime;
+	// $: localPomodorosPerLongBreak = $pomodorosPerLongBreak;
 	let testAudio: HTMLAudioElement;
 
 	function toggleSettings() {
@@ -117,6 +129,45 @@
 						</button>
 					</div>
 				</div>
+
+				<div class="setting-group">
+					<label for="working-time">Duración Trabajo</label>
+					<select id="working-time" bind:value={$workingTime}>
+						{#each times as time}
+							<option value={time.value}>{time.name}</option>
+						{/each}
+					</select>
+				</div>
+
+				<div class="setting-group">
+					<label for="break-time">Duración Descanso</label>
+					<select id="break-time" bind:value={$breakTime}>
+						{#each times as time}
+							<option value={time.value}>{time.name}</option>
+						{/each}
+					</select>
+				</div>
+
+				<div class="setting-group">
+					<label for="long-break-time">Duración Descanso Largo</label>
+					<select id="long-break-time" bind:value={$longBreakTime}>
+						{#each times as time}
+							<option value={time.value}>{time.name}</option>
+						{/each}
+					</select>
+				</div>
+
+				<div class="setting-group">
+					<label for="pomodoros-per-long-break"
+						>Pomodoros para Descanso Largo</label
+					>
+					<input
+						id="pomodoros-per-long-break"
+						type="number"
+						min="1"
+						bind:value={$pomodorosPerLongBreak}
+					/>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -215,8 +266,25 @@
 
 	label {
 		font-weight: bold;
-		margin-bottom: 0.5rem;
+		margin-bottom: 0.25rem; /* Reduced margin */
 	}
+
+	select, input[type="number"] { /* General styling for new inputs */
+		width: 100%;
+		padding: 0.5rem;
+		border-radius: 4px;
+		border: 1px solid var(--border-color);
+		background-color: var(--bg-secondary);
+		color: var(--text-primary);
+		font-size: 1rem;
+	}
+
+	select:focus, input[type="number"]:focus {
+		outline: none;
+		border-color: var(--accent-color);
+		box-shadow: 0 0 0 2px var(--accent-focus-shadow);
+	}
+
 
 	.volume-controls {
 		display: flex;
