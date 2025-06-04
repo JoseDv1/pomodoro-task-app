@@ -3,8 +3,8 @@ const CACHE_NAME = 'pomodoro-app-v1';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/src/app.css',
-  '/src/main.ts',
+  '/src/app.css', // replaced with bundle during build
+  '/src/main.ts', // replaced with bundle during build
   '/imgs/icons/tomato.png',
   '/imgs/icons/maskable_icon.png',
   '/sounds/alarm.wav',
