@@ -397,7 +397,7 @@
 	}
 
 	.timer-digits {
-		font-size: 4rem;
+		font-size: clamp(2.6rem, 11vw, 4rem);
 		font-weight: 800;
 		letter-spacing: -0.04em;
 		line-height: 1;
@@ -411,6 +411,8 @@
 		align-items: center;
 		gap: 0.3rem;
 		margin-top: 0.2rem;
+		flex-wrap: wrap;
+		justify-content: center;
 	}
 
 	.cycle-dot {
@@ -431,12 +433,13 @@
 	}
 
 	.adjust-btn {
-		padding: 0.25rem 0.65rem;
-		font-size: 0.8rem;
-		font-weight: 600;
+		padding: 0.35rem 0.75rem;
+		font-size: 0.85rem;
+		font-weight: 700;
 		background: var(--bg-secondary);
-		border-radius: 6px;
+		border-radius: 8px;
 		color: var(--text-secondary);
+		min-height: 36px;
 	}
 
 	.adjust-btn:hover {
@@ -448,48 +451,58 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 1rem;
+		gap: 0.75rem;
 		width: 100%;
+		max-width: 400px;
 		margin-top: 0.5rem;
 	}
 
 	.control-btn {
-		padding: 0.75rem 1.4rem;
-		border-radius: 12px;
-		font-size: 1rem;
+		flex: 1;
+		padding: 0.75rem 1.1rem;
+		border-radius: 14px;
+		font-size: 0.95rem;
 		font-weight: 700;
+		min-height: 48px;
 	}
 
 	.control-btn.big-action {
-		min-width: 150px;
-		padding: 0.9rem 2rem;
-		font-size: 1.15rem;
+		flex: 1.4;
+		padding: 0.85rem 1.6rem;
+		font-size: 1.1rem;
 		border-radius: 50px;
 	}
 
 	@media (max-width: 480px) {
 		.circular-timer-container {
-			width: 260px;
-			height: 260px;
+			width: min(260px, 75vw);
+			height: min(260px, 75vw);
 		}
 
 		.progress-ring {
-			width: 260px;
-			height: 260px;
+			width: 100%;
+			height: 100%;
 		}
 
-		.timer-digits {
-			font-size: 3.2rem;
+		.mode-tabs {
+			width: 100%;
+			justify-content: center;
+		}
+
+		.mode-tab {
+			padding: 0.4rem 0.7rem;
+			font-size: 0.8rem;
 		}
 
 		.control-btn {
-			padding: 0.65rem 1rem;
-			font-size: 0.9rem;
+			padding: 0.65rem 0.75rem;
+			font-size: 0.88rem;
+			min-height: 46px;
 		}
 
 		.control-btn.big-action {
-			min-width: 120px;
-			padding: 0.75rem 1.4rem;
+			padding: 0.75rem 1.1rem;
+			font-size: 1rem;
 		}
 	}
 </style>

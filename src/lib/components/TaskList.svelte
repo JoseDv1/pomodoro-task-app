@@ -879,4 +879,52 @@
 		border-color: #ef4444;
 		color: #ef4444;
 	}
+
+	@media (max-width: 560px) {
+		.task-toolbar {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.filter-pills {
+			width: 100%;
+			justify-content: space-between;
+		}
+
+		.filter-pill {
+			flex: 1;
+			text-align: center;
+			padding: 0.4rem 0.25rem;
+			font-size: 0.76rem;
+		}
+
+		.form-options-row {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 0.5rem;
+		}
+
+		.category-field {
+			grid-column: span 2;
+		}
+
+		.task-item {
+			padding: 0.75rem 0.85rem;
+		}
+
+		.action-icon-btn {
+			padding: 0.5rem;
+			min-width: 36px;
+			min-height: 36px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.custom-checkbox {
+			width: 24px;
+			height: 24px;
+			min-width: 24px;
+		}
+	}
 </style>

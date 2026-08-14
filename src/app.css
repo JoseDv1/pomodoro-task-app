@@ -36,14 +36,20 @@
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  min-height: -webkit-fill-available;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease;
   overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #app {
@@ -69,7 +75,7 @@ button {
   font-family: inherit;
   font-size: 0.95rem;
   font-weight: 600;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid var(--border-color);
   background-color: var(--button-bg);
   color: var(--text-primary);
@@ -81,6 +87,9 @@ button {
   gap: 0.5rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  min-height: 38px;
 }
 
 button:hover {
@@ -91,7 +100,7 @@ button:hover {
 }
 
 button:active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 button:focus-visible {
@@ -115,14 +124,15 @@ button.primary:hover {
 
 input, select, textarea {
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 1rem; /* 16px to prevent iOS auto-zoom on input focus */
   color: var(--text-primary);
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  touch-action: manipulation;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -137,12 +147,12 @@ input::placeholder, textarea::placeholder {
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -190,25 +200,33 @@ input::placeholder, textarea::placeholder {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: 20px;
   box-shadow: 0 8px 32px var(--shadow-color);
   padding: 1.5rem;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+@media (max-width: 640px) {
+  .glass-card {
+    padding: 1.15rem 1rem;
+    border-radius: 16px;
+  }
 }
 
 /* Modal Overlay & Container */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.65);
+  background-color: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  padding: 1rem;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-window {
@@ -217,7 +235,8 @@ input::placeholder, textarea::placeholder {
   border-radius: 20px;
   width: 100%;
   max-width: 600px;
-  max-height: 88vh;
+  max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
   padding: 1.75rem;
@@ -225,17 +244,26 @@ input::placeholder, textarea::placeholder {
   position: relative;
 }
 
+@media (max-width: 640px) {
+  .modal-window {
+    padding: 1.25rem 1rem;
+    max-height: 88vh;
+    max-height: 88dvh;
+    border-radius: 16px;
+  }
+}
+
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 1.25rem;
+  padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-color);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .modal-header h2 {
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -245,12 +273,14 @@ input::placeholder, textarea::placeholder {
 .modal-close-btn {
   background: transparent;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 0.25rem 0.5rem;
+  padding: 0.35rem 0.6rem;
   border-radius: 8px;
   line-height: 1;
+  min-height: 36px;
+  min-width: 36px;
 }
 
 .modal-close-btn:hover {
