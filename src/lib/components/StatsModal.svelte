@@ -200,18 +200,18 @@
 
 	.stat-cards-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-		gap: 0.85rem;
+		grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+		gap: 0.6rem;
 	}
 
 	.stat-card {
 		background: var(--bg-secondary);
 		border: 1px solid var(--border-color);
 		border-radius: 14px;
-		padding: 1rem;
+		padding: 0.75rem;
 		display: flex;
 		align-items: center;
-		gap: 0.85rem;
+		gap: 0.6rem;
 	}
 
 	.card-icon {

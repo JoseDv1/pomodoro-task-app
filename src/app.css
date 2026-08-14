@@ -34,15 +34,21 @@
 
 *, *::before, *::after {
   box-sizing: border-box;
+  min-width: 0;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   min-height: -webkit-fill-available;
   background-color: var(--bg-primary);
@@ -53,9 +59,12 @@ body {
 }
 
 #app {
+  width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 /* Typography Defaults */
@@ -64,27 +73,29 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0;
   font-weight: 700;
   letter-spacing: -0.02em;
+  word-break: break-word;
 }
 
 p {
   margin: 0;
   color: var(--text-secondary);
+  word-break: break-word;
 }
 
 button {
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 600;
   border-radius: 12px;
   border: 1px solid var(--border-color);
   background-color: var(--button-bg);
   color: var(--text-primary);
   cursor: pointer;
-  padding: 0.6rem 1.1rem;
+  padding: 0.55rem 0.9rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   -webkit-user-select: none;
@@ -129,10 +140,11 @@ input, select, textarea {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 10px;
-  padding: 0.65rem 0.9rem;
+  padding: 0.6rem 0.8rem;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   touch-action: manipulation;
+  max-width: 100%;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -147,8 +159,8 @@ input::placeholder, textarea::placeholder {
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -168,7 +180,7 @@ input::placeholder, textarea::placeholder {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: scale(0.97);
+    transform: scale(0.98);
   }
   to {
     opacity: 1;
@@ -181,7 +193,7 @@ input::placeholder, textarea::placeholder {
     box-shadow: 0 0 15px rgba(255, 99, 71, 0.2);
   }
   50% {
-    box-shadow: 0 0 30px rgba(255, 99, 71, 0.45);
+    box-shadow: 0 0 25px rgba(255, 99, 71, 0.4);
   }
 }
 
@@ -190,7 +202,7 @@ input::placeholder, textarea::placeholder {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
   }
 }
 
@@ -203,12 +215,14 @@ input::placeholder, textarea::placeholder {
   border-radius: 20px;
   box-shadow: 0 8px 32px var(--shadow-color);
   padding: 1.5rem;
+  max-width: 100%;
+  width: 100%;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 @media (max-width: 640px) {
   .glass-card {
-    padding: 1.15rem 1rem;
+    padding: 1rem 0.85rem;
     border-radius: 16px;
   }
 }
@@ -224,7 +238,7 @@ input::placeholder, textarea::placeholder {
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-overflow-scrolling: touch;
 }
@@ -234,19 +248,19 @@ input::placeholder, textarea::placeholder {
   border: 1px solid var(--border-color);
   border-radius: 20px;
   width: 100%;
-  max-width: 600px;
+  max-width: 580px;
   max-height: 90vh;
   max-height: 90dvh;
   overflow-y: auto;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  padding: 1.75rem;
+  padding: 1.5rem;
   color: var(--text-primary);
   position: relative;
 }
 
 @media (max-width: 640px) {
   .modal-window {
-    padding: 1.25rem 1rem;
+    padding: 1.1rem 0.85rem;
     max-height: 88vh;
     max-height: 88dvh;
     border-radius: 16px;
@@ -257,13 +271,13 @@ input::placeholder, textarea::placeholder {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 1rem;
+  padding-bottom: 0.85rem;
   border-bottom: 1px solid var(--border-color);
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .modal-header h2 {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -273,14 +287,14 @@ input::placeholder, textarea::placeholder {
 .modal-close-btn {
   background: transparent;
   border: none;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 0.35rem 0.6rem;
+  padding: 0.25rem 0.5rem;
   border-radius: 8px;
   line-height: 1;
-  min-height: 36px;
-  min-width: 36px;
+  min-height: 34px;
+  min-width: 34px;
 }
 
 .modal-close-btn:hover {

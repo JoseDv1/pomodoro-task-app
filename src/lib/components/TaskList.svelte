@@ -528,7 +528,8 @@
 		display: flex;
 		align-items: center;
 		flex: 1;
-		min-width: 160px;
+		min-width: 0;
+		width: 100%;
 	}
 
 	.search-icon {

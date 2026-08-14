@@ -22,16 +22,44 @@
 </script>
 
 <header class="app-header">
-	<div class="header-brand">
-		<div class="logo-wrapper">
-			<img src="/imgs/icons/tomato.png" alt="Tomatito" class="brand-logo" />
+	<div class="header-top-row">
+		<div class="header-brand">
+			<div class="logo-wrapper">
+				<img src="/imgs/icons/tomato.png" alt="Tomatito" class="brand-logo" />
+			</div>
+			<div class="brand-text">
+				<h1 class="brand-title">Pomodoro<span class="accent">Focus</span></h1>
+				<span class="brand-subtitle">Gestión de Tiempo & Tareas</span>
+			</div>
 		</div>
-		<div class="brand-text">
-			<h1 class="brand-title">Pomodoro<span class="accent">Focus</span></h1>
-			<span class="brand-subtitle">Gestión de Tiempo & Tareas</span>
+
+		<!-- Status Badges (Streak & Tomato) -->
+		<div class="header-badges">
+			<!-- Streak Pill -->
+			<button
+				class="pill-badge streak-pill"
+				onclick={onOpenStats}
+				title="Racha de productividad diaria"
+				aria-label="Ver estadísticas y racha diaria"
+			>
+				<span class="pill-icon">🔥</span>
+				<span class="pill-text">{$stats.currentStreak}d</span>
+			</button>
+
+			<!-- Tomato Balance Pill -->
+			<button
+				class="pill-badge tomato-pill"
+				onclick={onOpenThemeStore}
+				title="Tomates acumulados. ¡Úsalos en la Tienda!"
+				aria-label="Abrir tienda de temas"
+			>
+				<img src="/imgs/icons/tomato.png" alt="Pomodoro" class="pill-tomato-img" />
+				<span class="pill-count">{$pomodoroCount}</span>
+			</button>
 		</div>
 	</div>
 
+	<!-- Action Controls -->
 	<div class="header-actions">
 		<!-- PWA Install Button (Mobile & Desktop) -->
 		{#if $deferredInstallPrompt && !$isAppInstalled}
@@ -42,33 +70,9 @@
 				aria-label="Instalar aplicación"
 			>
 				<span>📲</span>
-				<span class="install-text">Instalar App</span>
+				<span class="install-text">Instalar</span>
 			</button>
 		{/if}
-
-		<!-- Streak Pill -->
-		<button
-			class="pill-badge streak-pill"
-			onclick={onOpenStats}
-			title="Racha de productividad diaria"
-			aria-label="Ver estadísticas y racha diaria"
-		>
-			<span class="pill-icon">🔥</span>
-			<span class="pill-text"
-				>{$stats.currentStreak} {$stats.currentStreak === 1 ? "día" : "días"}</span
-			>
-		</button>
-
-		<!-- Tomato Balance Pill -->
-		<button
-			class="pill-badge tomato-pill"
-			onclick={onOpenThemeStore}
-			title="Tomates acumulados. ¡Úsalos en la Tienda!"
-			aria-label="Abrir tienda de temas"
-		>
-			<img src="/imgs/icons/tomato.png" alt="Pomodoro" class="pill-tomato-img" />
-			<span class="pill-count">{$pomodoroCount}</span>
-		</button>
 
 		<!-- Ambient Sound Button -->
 		<button
@@ -79,8 +83,8 @@
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
-				width="20"
-				height="20"
+				width="18"
+				height="18"
 				viewBox="0 0 24 24"
 				fill="none"
 				stroke="currentColor"
@@ -106,8 +110,8 @@
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
-				width="20"
-				height="20"
+				width="18"
+				height="18"
 				viewBox="0 0 24 24"
 				fill="none"
 				stroke="currentColor"
@@ -130,8 +134,8 @@
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
-				width="20"
-				height="20"
+				width="18"
+				height="18"
 				viewBox="0 0 24 24"
 				fill="none"
 				stroke="currentColor"
@@ -155,8 +159,8 @@
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
-				width="20"
-				height="20"
+				width="18"
+				height="18"
 				viewBox="0 0 24 24"
 				fill="none"
 				stroke="currentColor"
@@ -188,7 +192,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: max(0.85rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right)) 0.85rem max(1.25rem, env(safe-area-inset-left));
+		padding: max(0.75rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) 0.75rem max(1rem, env(safe-area-inset-left));
 		background-color: var(--card-bg);
 		backdrop-filter: blur(12px);
 		-webkit-backdrop-filter: blur(12px);
@@ -196,31 +200,41 @@
 		position: sticky;
 		top: 0;
 		z-index: 100;
-		gap: 1rem;
-		flex-wrap: wrap;
+		gap: 0.75rem;
+		width: 100%;
+		max-width: 100%;
+	}
+
+	.header-top-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		min-width: 0;
 	}
 
 	.header-brand {
 		display: flex;
 		align-items: center;
-		gap: 0.85rem;
+		gap: 0.65rem;
+		min-width: 0;
 	}
 
 	.logo-wrapper {
-		width: 42px;
-		height: 42px;
+		width: 36px;
+		height: 36px;
+		min-width: 36px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		background: var(--badge-bg);
-		border-radius: 12px;
+		border-radius: 10px;
 		border: 1px solid var(--border-color);
 		box-shadow: 0 4px 12px var(--shadow-color);
 	}
 
 	.brand-logo {
-		width: 28px;
-		height: 28px;
+		width: 24px;
+		height: 24px;
 		object-fit: contain;
 		animation: bounceSlow 3s ease-in-out infinite;
 	}
@@ -229,53 +243,63 @@
 		display: flex;
 		flex-direction: column;
 		text-align: left;
+		min-width: 0;
 	}
 
 	.brand-title {
-		font-size: 1.25rem;
+		font-size: 1.15rem;
 		font-weight: 800;
 		letter-spacing: -0.03em;
 		line-height: 1.1;
 		color: var(--text-primary);
+		white-space: nowrap;
 	}
 
 	.brand-title .accent {
 		color: var(--accent-color);
-		margin-left: 2px;
+		margin-left: 1px;
 	}
 
 	.brand-subtitle {
-		font-size: 0.75rem;
+		font-size: 0.72rem;
 		color: var(--text-secondary);
 		font-weight: 500;
+		white-space: nowrap;
+	}
+
+	.header-badges {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
 	}
 
 	.header-actions {
 		display: flex;
 		align-items: center;
-		gap: 0.6rem;
-		flex-wrap: wrap;
+		gap: 0.4rem;
+		flex-shrink: 0;
 	}
 
 	.pill-badge {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.45rem;
-		padding: 0.45rem 0.85rem;
+		gap: 0.35rem;
+		padding: 0.35rem 0.65rem;
 		border-radius: 50px;
-		font-size: 0.88rem;
+		font-size: 0.82rem;
 		font-weight: 700;
 		background-color: var(--bg-secondary);
 		border: 1px solid var(--border-color);
 		color: var(--text-primary);
 		cursor: pointer;
 		transition: all 0.2s ease;
+		min-height: 32px;
+		white-space: nowrap;
 	}
 
 	.pill-badge:hover {
 		border-color: var(--accent-color);
-		transform: translateY(-2px);
-		box-shadow: 0 4px 12px var(--shadow-color);
+		transform: translateY(-1px);
 	}
 
 	.install-pill {
@@ -291,7 +315,7 @@
 	}
 
 	.pill-icon {
-		font-size: 1rem;
+		font-size: 0.9rem;
 	}
 
 	.tomato-pill {
@@ -300,13 +324,14 @@
 	}
 
 	.pill-tomato-img {
-		width: 18px;
-		height: 18px;
+		width: 16px;
+		height: 16px;
 	}
 
 	.icon-btn {
-		width: 38px;
-		height: 38px;
+		width: 34px;
+		height: 34px;
+		min-width: 34px;
 		padding: 0;
 		border-radius: 10px;
 		display: flex;
@@ -332,33 +357,39 @@
 
 	.sound-indicator {
 		position: absolute;
-		top: 6px;
-		right: 6px;
-		width: 7px;
-		height: 7px;
+		top: 5px;
+		right: 5px;
+		width: 6px;
+		height: 6px;
 		border-radius: 50%;
 		background-color: var(--accent-color);
-		box-shadow: 0 0 8px var(--accent-color);
+		box-shadow: 0 0 6px var(--accent-color);
 		animation: pulseGlow 1.5s infinite ease-in-out;
 	}
 
 	.shortcut-icon {
-		font-size: 0.95rem;
+		font-size: 0.9rem;
 		font-weight: 700;
 	}
 
 	@media (max-width: 640px) {
 		.app-header {
-			padding: max(0.6rem, env(safe-area-inset-top)) 0.75rem 0.6rem 0.75rem;
+			padding: max(0.5rem, env(safe-area-inset-top)) 0.6rem 0.5rem 0.6rem;
+			gap: 0.4rem;
 		}
 
 		.brand-subtitle {
 			display: none;
 		}
 
-		.pill-badge {
-			padding: 0.38rem 0.65rem;
-			font-size: 0.8rem;
+		.brand-title {
+			font-size: 1.05rem;
+		}
+
+		.header-top-row {
+			flex: 1;
+			justify-content: space-between;
+			min-width: 0;
 		}
 
 		.install-text {
@@ -367,6 +398,25 @@
 
 		.shortcut-btn {
 			display: none;
+		}
+	}
+
+	@media (max-width: 420px) {
+		.brand-title span.accent {
+			display: inline;
+		}
+
+		.pill-badge {
+			padding: 0.25rem 0.45rem;
+			font-size: 0.76rem;
+			min-height: 28px;
+		}
+
+		.icon-btn {
+			width: 32px;
+			height: 32px;
+			min-width: 32px;
+			border-radius: 8px;
 		}
 	}
 </style>
