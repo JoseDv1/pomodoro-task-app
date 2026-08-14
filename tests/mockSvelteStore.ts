@@ -9,9 +9,11 @@ export function writable<T>(value: T): Writable<T> {
   const subs = new Set<(value: T) => void>();
   function set(v: T) {
     current = v;
-    for (const s of subs) s(v);
+    for (const s of Array.from(subs)) s(v);
   }
-  function update(fn: (value: T) => T) { set(fn(current)); }
+  function update(fn: (value: T) => T) {
+    set(fn(current));
+  }
   function subscribe(run: (value: T) => void) {
     subs.add(run);
     run(current);
@@ -27,10 +29,40 @@ export function get<T>(store: { subscribe(run: (value: T) => void): () => void }
   return val;
 }
 
-export function derived<T, U>(store: { subscribe(run: (value: T) => void): () => void }, fn: (value: T) => U) {
-  const result = writable(fn(get(store)));
-  store.subscribe(v => result.set(fn(v)));
-  return {
-    subscribe: result.subscribe
-  };
+export function derived(stores: any, fn: (...args: any[]) => any) {
+  if (Array.isArray(stores)) {
+    const values = new Array(stores.length);
+    let ready = false;
+    const result = writable<any>(undefined);
+
+    stores.forEach((s, i) => {
+      s.subscribe((val: any) => {
+        values[i] = val;
+        if (ready) {
+          result.set(fn(values));
+        }
+      });
+    });
+
+    ready = true;
+    result.set(fn(values));
+
+    return { subscribe: result.subscribe };
+  } else {
+    let ready = false;
+    let singleVal: any;
+    const result = writable<any>(undefined);
+
+    stores.subscribe((val: any) => {
+      singleVal = val;
+      if (ready) {
+        result.set(fn(singleVal));
+      }
+    });
+
+    ready = true;
+    result.set(fn(singleVal));
+
+    return { subscribe: result.subscribe };
+  }
 }

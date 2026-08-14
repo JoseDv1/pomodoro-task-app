@@ -1,212 +1,425 @@
 import { writable, derived, get } from 'svelte/store';
+import type { TimerMode } from '../types';
+import { settings } from './settings';
+import { recordCompletedPomodoro } from './stats';
+import { incrementActiveTaskPomodoro, activeTask } from './task';
+import { playAlarmSound, playTickSound } from '../utils/audioSynth';
+import { updateMediaSession, clearMediaSession } from '../utils/mediaSession';
+import { requestWakeLock, releaseWakeLock } from '../utils/wakeLock';
 
-// Constantes
-export const times = [
-	{ name: "1 minuto", value: 60 },
-	{ name: "5 minutos", value: 300 },
-	{ name: "10 minutos", value: 600 },
-	{ name: "15 minutos", value: 900 },
-	{ name: "30 minutos", value: 1800 },
-	{ name: "45 minutos", value: 2700 },
-	{ name: "1 hora", value: 3600 },
-	{ name: "2 horas", value: 7200 },
-];
+const POMODORO_COUNT_KEY = 'pomodoroCount';
+const TIMER_STATE_KEY = 'pomodoro_timer_state';
 
-// Estados
-export const interval = writable<number | undefined>(undefined);
-export const timer = writable<number>(1800);
-export const isWorking = writable<boolean>(true);
+// Load stored tomato balance
+function loadPomodoroCount(): number {
+	if (typeof window === 'undefined') return 0;
+	try {
+		return parseInt(localStorage.getItem(POMODORO_COUNT_KEY) || '0', 10) || 0;
+	} catch {
+		return 0;
+	}
+}
+
+// Stores
+export const mode = writable<TimerMode>('work');
+export const duration = writable<number>(25 * 60);
+export const timeLeft = writable<number>(25 * 60);
 export const isRunning = writable<boolean>(false);
 export const endTime = writable<number | null>(null);
-export const workingTime = writable<number>(1800);
-export const breakTime = writable<number>(300);
-export const pomodoroCount = writable<number>(
-	parseInt(window.localStorage.getItem("pomodoroCount") ?? "0", 10)
-);
-pomodoroCount.subscribe((count) => {
-	window.localStorage.setItem("pomodoroCount", count.toString());
-});
-export const alarmVolume = writable<number>(0.5);
+export const cycleCount = writable<number>(1); // Current pomodoro in cycle (1 to longBreakInterval)
+export const pomodoroCount = writable<number>(loadPomodoroCount());
+export const interval = writable<number | undefined>(undefined);
 
-// Cargar estado persistente del temporizador
+// Keep pomodoroCount synced with localStorage
 if (typeof window !== 'undefined') {
-    const savedEnd = window.localStorage.getItem('timerEnd');
-    const savedType = window.localStorage.getItem('timerType');
-
-    if (savedEnd && savedType) {
-        const end = parseInt(savedEnd, 10);
-        if (end > Date.now()) {
-            endTime.set(end);
-            isWorking.set(savedType === 'work');
-            const remaining = Math.ceil((end - Date.now()) / 1000);
-            timer.set(remaining);
-            isRunning.set(true);
-            const newInterval = setInterval(updateTime, 1000) as unknown as number;
-            interval.set(newInterval);
-        } else {
-            window.localStorage.removeItem('timerEnd');
-            window.localStorage.removeItem('timerType');
-        }
-    }
+	pomodoroCount.subscribe((count) => {
+		try {
+			localStorage.setItem(POMODORO_COUNT_KEY, count.toString());
+		} catch (e) {
+			console.error('Error saving pomodoroCount:', e);
+		}
+	});
 }
 
-export const timerDisplay = derived(timer, $timer => {
-	const hours = Math.floor($timer / 3600);
-	const minutes = Math.floor(($timer % 3600) / 60);
-	const seconds = $timer % 60;
+// Derived stores
+export const isWorking = derived(mode, ($mode) => $mode === 'work');
+export const isShortBreak = derived(mode, ($mode) => $mode === 'shortBreak');
+export const isLongBreak = derived(mode, ($mode) => $mode === 'longBreak');
+
+export const modeLabel = derived(mode, ($mode) => {
+	switch ($mode) {
+		case 'work':
+			return 'Enfoque';
+		case 'shortBreak':
+			return 'Descanso Corto';
+		case 'longBreak':
+			return 'Descanso Largo';
+	}
+});
+
+export const timerDisplay = derived(timeLeft, ($timeLeft) => {
+	const totalSecs = Math.max(0, $timeLeft);
+	const hours = Math.floor(totalSecs / 3600);
+	const minutes = Math.floor((totalSecs % 3600) / 60);
+	const seconds = totalSecs % 60;
 
 	if (hours > 0) {
-		// Formato con horas (HH:MM:SS)
-		return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-	} else {
-		// Formato sin horas (MM:SS)
-		return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+		return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+	}
+	return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+});
+
+export const progress = derived([timeLeft, duration], ([$timeLeft, $duration]) => {
+	if ($duration <= 0) return 0;
+	const elapsed = $duration - $timeLeft;
+	const pct = Math.max(0, Math.min(100, (elapsed / $duration) * 100));
+	return pct;
+});
+
+// Update document title and sync favicon
+if (typeof window !== 'undefined') {
+	timerDisplay.subscribe((display) => {
+		const currentMode = get(mode);
+		const running = get(isRunning);
+		const icon = currentMode === 'work' ? '🍅' : '☕';
+		const modeText = currentMode === 'work' ? 'Enfoque' : 'Descanso';
+		if (running) {
+			document.title = `${icon} ${display} - ${modeText} | Pomodoro`;
+		} else {
+			document.title = 'Pomodoro Task App';
+		}
+	});
+}
+
+// Sync durations when settings change (if timer is not running)
+settings.subscribe(($settings) => {
+	if (!get(isRunning)) {
+		const currentMode = get(mode);
+		let targetDuration = $settings.workDuration * 60;
+		if (currentMode === 'shortBreak') targetDuration = $settings.shortBreakDuration * 60;
+		if (currentMode === 'longBreak') targetDuration = $settings.longBreakDuration * 60;
+
+		duration.set(targetDuration);
+		timeLeft.set(targetDuration);
 	}
 });
 
-// Funciones
-export function setTimer(time: number) {
-	timer.set(time);
-}
+function syncMobileControls(): void {
+	if (typeof window === 'undefined') return;
 
-export function updateTime() {
-        const target = get(endTime);
-        if (target === null) return;
+	const running = get(isRunning);
+	const currentMode = get(mode);
+	const display = get(timerDisplay);
+	const task = get(activeTask);
 
-        const remaining = Math.ceil((target - Date.now()) / 1000);
-        timer.set(remaining);
+	updateMediaSession({
+		title: task ? task.name : 'Sesión de Pomodoro',
+		mode: currentMode,
+		timeDisplay: display,
+		isRunning: running,
+		onPlay: () => startTimer(),
+		onPause: () => stopTimer(),
+		onNext: () => skipTimer(),
+	});
 
-        if (remaining <= 0) {
-                nextTimer();
-        }
-}
-
-export function startTimer() {
-        const currentInterval = get(interval);
-        if (currentInterval) clearInterval(currentInterval);
-
-        const end = Date.now() + get(timer) * 1000;
-        endTime.set(end);
-        if (typeof window !== 'undefined') {
-                window.localStorage.setItem('timerEnd', end.toString());
-                window.localStorage.setItem('timerType', get(isWorking) ? 'work' : 'break');
-        }
-
-        const newInterval = setInterval(updateTime, 1000) as unknown as number;
-        interval.set(newInterval);
-        isRunning.set(true);
-
-	// Comunicar con el Service Worker
-	if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-		navigator.serviceWorker.controller.postMessage({
-			action: 'START_TIMER',
-			duration: get(timer),
-			type: get(isWorking) ? 'work' : 'break'
-		});
+	if (running) {
+		requestWakeLock();
+	} else {
+		releaseWakeLock();
 	}
 }
 
-export function stopTimer() {
-        const currentInterval = get(interval);
-        if (currentInterval) clearInterval(currentInterval);
-        interval.set(undefined);
-        isRunning.set(false);
-        endTime.set(null);
-        if (typeof window !== 'undefined') {
-                window.localStorage.removeItem('timerEnd');
-                window.localStorage.removeItem('timerType');
-        }
+/**
+ * Switch timer mode cleanly
+ */
+export function switchMode(newMode: TimerMode, autoStart = false): void {
+	stopTimer(false);
+	mode.set(newMode);
 
-	// Comunicar con el Service Worker
-	if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-		navigator.serviceWorker.controller.postMessage({
-			action: 'STOP_TIMER'
-		});
+	const userSettings = get(settings);
+	let targetDuration = userSettings.workDuration * 60;
+	if (newMode === 'shortBreak') targetDuration = userSettings.shortBreakDuration * 60;
+	if (newMode === 'longBreak') targetDuration = userSettings.longBreakDuration * 60;
+
+	duration.set(targetDuration);
+	timeLeft.set(targetDuration);
+
+	syncMobileControls();
+
+	if (autoStart) {
+		startTimer();
 	}
 }
 
-export function resetTimer(initialTime: number) {
-	stopTimer();
-	setTimer(initialTime);
+/**
+ * Timer tick handler
+ */
+export function updateTime(): void {
+	const target = get(endTime);
+	if (target === null) return;
+
+	const remaining = Math.ceil((target - Date.now()) / 1000);
+	timeLeft.set(Math.max(0, remaining));
+
+	// Optional subtle ticking sound
+	const currentSettings = get(settings);
+	if (currentSettings.tickingSound && get(mode) === 'work' && remaining > 0) {
+		playTickSound(0.08);
+	}
+
+	if (remaining <= 0) {
+		handleSessionComplete();
+	}
 }
 
-export function nextTimer() {
-	// Reproducir sonido
-	const audio = new Audio("/sounds/alarm.wav");
-	audio.volume = get(alarmVolume); // Usar el volumen configurado por el usuario
-	audio.play();
+/**
+ * Handle session completion logic
+ */
+export function handleSessionComplete(): void {
+	stopTimer(false);
+
+	const currentMode = get(mode);
+	const userSettings = get(settings);
+
+	// Play alarm sound
+	playAlarmSound(userSettings.alarmSound, userSettings.alarmVolume);
+
+	// Show system notification
+	triggerNotification(currentMode);
+
+	if (currentMode === 'work') {
+		// Completed a focus session!
+		pomodoroCount.update((c) => c + 1);
+		recordCompletedPomodoro(userSettings.workDuration);
+		incrementActiveTaskPomodoro();
+
+		const currentCycle = get(cycleCount);
+		const intervalLimit = Math.max(1, userSettings.longBreakInterval);
+
+		if (currentCycle >= intervalLimit) {
+			// Trigger Long Break
+			cycleCount.set(1);
+			switchMode('longBreak', userSettings.autoStartBreaks);
+		} else {
+			// Trigger Short Break
+			cycleCount.update((c) => c + 1);
+			switchMode('shortBreak', userSettings.autoStartBreaks);
+		}
+	} else {
+		// Break finished! Return to work
+		switchMode('work', userSettings.autoStartPomodoros);
+	}
+}
+
+/**
+ * Show desktop / mobile completion notification
+ */
+function triggerNotification(completedMode: TimerMode): void {
+	if (typeof window === 'undefined') return;
+	if (!('Notification' in window) || Notification.permission !== 'granted') return;
 
 	try {
-		if ("Notification" in window && Notification.permission === "granted") {
-			new Notification(
-				get(isWorking) ? "¡Hora de descansar!" : "¡Hora de trabajar!",
-				{
-					body: get(isWorking)
-						? `¡Es hora de descansar! Cuida tu enfoque y tu salud.`
-						: `¡Es hora de trabajar! A mover las manitas.`,
-					icon: get(isWorking) ? "/imgs/rest.jpg" : "/imgs/focus.jpg",
-				}
-			);
+		const isWork = completedMode === 'work';
+		const title = isWork ? '🎉 ¡Sesión de enfoque completada!' : '⏰ ¡Fin del descanso!';
+		const body = isWork
+			? 'Excelente trabajo. Es momento de relajar la mente y estirarte.'
+			: 'Tu mente está lista y despejada. ¡A por tu siguiente objetivo!';
+		const icon = isWork ? '/imgs/rest.jpg' : '/imgs/focus.jpg';
+
+		if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+			navigator.serviceWorker.controller.postMessage({
+				action: 'SHOW_NOTIFICATION',
+				title,
+				options: {
+					body,
+					icon,
+					badge: '/imgs/icons/tomato.png',
+					vibrate: [200, 100, 200, 100, 300],
+					tag: 'pomodoro-session-ended',
+					renotify: true,
+					actions: [{ action: 'open_app', title: '🚀 Abrir App' }],
+				},
+			});
+		} else {
+			new Notification(title, {
+				body,
+				icon,
+			});
 		}
-	} catch (error) {
-		console.error(error);
+	} catch (e) {
+		console.warn('Could not display notification:', e);
 	}
-
-        if (get(isWorking)) {
-                // Incrementamos el contador de pomodoros completados
-                pomodoroCount.update((count) => count + 1)
-                // Guardamos el contador en localStorage
-                window.localStorage.setItem("pomodoroCount", get(pomodoroCount).toString());
-                setTimer(get(breakTime));
-                isWorking.set(false);
-        } else {
-                setTimer(get(workingTime));
-                isWorking.set(true);
-        }
-
-        // Si el temporizador estaba en marcha, comenzamos el nuevo temporizador
-        // también en el Service Worker
-        if (get(isRunning)) {
-                const newEnd = Date.now() + get(timer) * 1000;
-                endTime.set(newEnd);
-                if (typeof window !== 'undefined') {
-                        window.localStorage.setItem('timerEnd', newEnd.toString());
-                        window.localStorage.setItem('timerType', get(isWorking) ? 'work' : 'break');
-                }
-                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                        navigator.serviceWorker.controller.postMessage({
-                                action: 'START_TIMER',
-                                duration: get(timer),
-                                type: get(isWorking) ? 'work' : 'break'
-                        });
-                }
-        }
 }
 
-// Función para actualizar el timer desde el Service Worker
-export function syncTimerWithServiceWorker(timeLeft: number, isActive: boolean, isWork: boolean) {
-        // Actualizar el tiempo restante
-        timer.set(timeLeft);
-        endTime.set(Date.now() + timeLeft * 1000);
-        if (typeof window !== 'undefined') {
-                window.localStorage.setItem('timerEnd', (Date.now() + timeLeft * 1000).toString());
-                window.localStorage.setItem('timerType', isWork ? 'work' : 'break');
-        }
+/**
+ * Start or resume countdown
+ */
+export function startTimer(): void {
+	const currentInterval = get(interval);
+	if (currentInterval) clearInterval(currentInterval);
 
-	// Actualizar el estado de trabajo/descanso
-	isWorking.set(isWork);
+	const remainingSecs = get(timeLeft);
+	const targetEnd = Date.now() + remainingSecs * 1000;
+	endTime.set(targetEnd);
+	isRunning.set(true);
 
-	// Actualizar el estado de ejecución
-	isRunning.set(isActive);
+	if (typeof window !== 'undefined') {
+		localStorage.setItem(TIMER_STATE_KEY, JSON.stringify({
+			end: targetEnd,
+			mode: get(mode),
+			duration: get(duration),
+		}));
+	}
 
-	// Si está activo, asegurarse de que el temporizador local esté en marcha
-	if (isActive) {
+	const newInterval = setInterval(updateTime, 1000) as unknown as number;
+	interval.set(newInterval);
+
+	syncMobileControls();
+
+	// Notify Service Worker
+	if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+		navigator.serviceWorker.controller.postMessage({
+			action: 'START_TIMER',
+			duration: remainingSecs,
+			type: get(mode),
+		});
+	}
+}
+
+/**
+ * Stop or pause countdown
+ */
+export function stopTimer(notifySw = true): void {
+	const currentInterval = get(interval);
+	if (currentInterval) clearInterval(currentInterval);
+	interval.set(undefined);
+	isRunning.set(false);
+	endTime.set(null);
+
+	if (typeof window !== 'undefined') {
+		localStorage.removeItem(TIMER_STATE_KEY);
+	}
+
+	syncMobileControls();
+
+	if (notifySw && typeof navigator !== 'undefined' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+		navigator.serviceWorker.controller.postMessage({
+			action: 'STOP_TIMER',
+		});
+	}
+}
+
+/**
+ * Toggle start/pause
+ */
+export function toggleTimer(): void {
+	if (get(isRunning)) {
+		stopTimer();
+	} else {
+		startTimer();
+	}
+}
+
+/**
+ * Reset current timer to mode duration
+ */
+export function resetTimer(): void {
+	stopTimer();
+	const currentMode = get(mode);
+	const userSettings = get(settings);
+	let targetDuration = userSettings.workDuration * 60;
+	if (currentMode === 'shortBreak') targetDuration = userSettings.shortBreakDuration * 60;
+	if (currentMode === 'longBreak') targetDuration = userSettings.longBreakDuration * 60;
+
+	duration.set(targetDuration);
+	timeLeft.set(targetDuration);
+
+	if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+		navigator.serviceWorker.controller.postMessage({
+			action: 'CLEAR_PROGRESS_NOTIFICATION',
+		});
+	}
+}
+
+/**
+ * Skip current session to next mode
+ */
+export function skipTimer(): void {
+	const currentMode = get(mode);
+	if (currentMode === 'work') {
+		const currentCycle = get(cycleCount);
+		const userSettings = get(settings);
+		if (currentCycle >= userSettings.longBreakInterval) {
+			cycleCount.set(1);
+			switchMode('longBreak', false);
+		} else {
+			cycleCount.update((c) => c + 1);
+			switchMode('shortBreak', false);
+		}
+	} else {
+		switchMode('work', false);
+	}
+}
+
+/**
+ * Add or subtract seconds to current timer
+ */
+export function addSeconds(seconds: number): void {
+	timeLeft.update((curr) => {
+		const newTime = Math.max(10, curr + seconds);
+		duration.update((d) => Math.max(d, newTime));
+		if (get(isRunning)) {
+			endTime.set(Date.now() + newTime * 1000);
+		}
+		return newTime;
+	});
+	syncMobileControls();
+}
+
+/**
+ * Sync state when restored from background / Service Worker
+ */
+export function syncFromServiceWorker(remaining: number, isWork: boolean, active: boolean): void {
+	timeLeft.set(remaining);
+	mode.set(isWork ? 'work' : 'shortBreak');
+	isRunning.set(active);
+
+	if (active) {
+		endTime.set(Date.now() + remaining * 1000);
 		const currentInterval = get(interval);
 		if (currentInterval) clearInterval(currentInterval);
-
 		const newInterval = setInterval(updateTime, 1000) as unknown as number;
 		interval.set(newInterval);
+	} else {
+		const currentInterval = get(interval);
+		if (currentInterval) clearInterval(currentInterval);
+		interval.set(undefined);
 	}
+
+	syncMobileControls();
 }
 
-
+// Restore saved timer state on startup if app was closed while running
+if (typeof window !== 'undefined') {
+	try {
+		const savedRaw = localStorage.getItem(TIMER_STATE_KEY);
+		if (savedRaw) {
+			const saved = JSON.parse(savedRaw);
+			if (saved && saved.end && saved.end > Date.now()) {
+				const remaining = Math.ceil((saved.end - Date.now()) / 1000);
+				mode.set(saved.mode || 'work');
+				duration.set(saved.duration || 25 * 60);
+				timeLeft.set(remaining);
+				endTime.set(saved.end);
+				isRunning.set(true);
+				const newInterval = setInterval(updateTime, 1000) as unknown as number;
+				interval.set(newInterval);
+				syncMobileControls();
+			} else {
+				localStorage.removeItem(TIMER_STATE_KEY);
+			}
+		}
+	} catch (e) {
+		console.error('Error recovering timer state:', e);
+	}
+}

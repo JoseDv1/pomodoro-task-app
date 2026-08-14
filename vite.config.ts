@@ -1,9 +1,9 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
-import { promises as fs } from 'fs'
-import path from 'path'
+import { promises as fs } from 'node:fs'
+import path from 'node:path'
 
-function injectSwAssets() {
+function injectSwAssets(): Plugin {
   return {
     name: 'inject-sw-assets',
     apply: 'build',

@@ -1,10 +1,10 @@
-// Service Worker para la aplicación Pomodoro
-const CACHE_NAME = 'pomodoro-app-v1';
+// Service Worker para Pomodoro Task App v2
+const CACHE_NAME = 'pomodoro-app-v2';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/src/app.css', // replaced with bundle during build
-  '/src/main.ts', // replaced with bundle during build
+  '/src/app.css',
+  '/src/main.ts',
   '/imgs/icons/tomato.png',
   '/imgs/icons/maskable_icon.png',
   '/sounds/alarm.wav',
@@ -12,214 +12,235 @@ const urlsToCache = [
   '/imgs/rest.jpg'
 ];
 
-// Variables para gestionar el temporizador en segundo plano
-let timerInterval;
-let timerEndTime;
+let timerInterval = null;
+let timerEndTime = null;
 let isTimerRunning = false;
-let timerType = 'work'; // 'work' o 'break'
-let currentTimerDuration = 0;
+let timerType = 'work'; // 'work' | 'shortBreak' | 'longBreak'
+let lastKnownDuration = 1500;
+let lastKnownTimeLeft = 1500;
 
-// Instalación del service worker
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Cache abierto');
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(urlsToCache).catch((err) => {
+        console.warn('Some cache assets failed to load:', err);
+      });
+    })
   );
-  // Tomar el control inmediatamente
   self.skipWaiting();
 });
 
-// Activación del service worker
 self.addEventListener('activate', (event) => {
-  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then((keys) => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
+        keys.map((k) => {
+          if (k !== CACHE_NAME) {
+            return caches.delete(k);
           }
         })
       );
-    }).then(() => {
-      // Tomar el control de todas las páginas dentro del alcance
-      return self.clients.claim();
+    }).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) return;
+
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      if (cached) return cached;
+      return fetch(event.request).then((response) => {
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
+        }
+        const cloned = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
+        return response;
+      }).catch(() => cached);
     })
   );
 });
 
-// Interceptación de solicitudes de red
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Cache hit - devuelve la respuesta desde el cache
-        if (response) {
-          return response;
-        }
-        
-        return fetch(event.request).then(
-          (response) => {
-            // Verificar si recibimos una respuesta válida
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
+// Format seconds into MM:SS
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
 
-            // Clonar la respuesta para poder guardarla en caché y devolverla
-            const responseToCache = response.clone();
+// Update or display persistent timer notification with action controls
+function updateTimerNotification(secondsLeft, isRunning, type) {
+  const isWork = type === 'work';
+  const modeText = isWork ? 'Enfoque' : 'Descanso';
+  const timeFormatted = formatTime(secondsLeft);
+  const title = `${isWork ? '🍅' : '☕'} ${timeFormatted} - ${modeText}`;
+  const statusText = isRunning ? 'Sesión en curso...' : 'Temporizador en pausa';
 
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
+  const actions = isRunning
+    ? [
+        { action: 'pause_timer', title: '⏸️ Pausar' },
+        { action: 'skip_timer', title: '⏭️ Saltar' }
+      ]
+    : [
+        { action: 'resume_timer', title: '▶️ Continuar' },
+        { action: 'skip_timer', title: '⏭️ Saltar' }
+      ];
 
-            return response;
-          }
-        );
-      })
-  );
-});
+  self.registration.showNotification(title, {
+    body: `${statusText} • Pomodoro Task App`,
+    icon: isWork ? '/imgs/focus.jpg' : '/imgs/rest.jpg',
+    badge: '/imgs/icons/tomato.png',
+    tag: 'pomodoro-timer-progress',
+    silent: true,
+    renotify: false,
+    requireInteraction: false,
+    actions
+  }).catch(() => {});
+}
 
-// Manejo de mensajes desde la aplicación principal
 self.addEventListener('message', (event) => {
   const data = event.data;
-  
+  if (!data) return;
+
   if (data.action === 'START_TIMER') {
-    // Iniciar temporizador en segundo plano
     startBackgroundTimer(data.duration, data.type);
-    
-    // Responder a la aplicación principal
-    if (event.source && event.source.postMessage) {
-      event.source.postMessage({
-        action: 'TIMER_STARTED',
-        timerType: timerType,
-        endTime: timerEndTime,
-        isRunning: isTimerRunning
-      });
-    }
-  } 
-  else if (data.action === 'STOP_TIMER') {
-    // Detener temporizador
+  } else if (data.action === 'STOP_TIMER') {
     stopBackgroundTimer();
-    
-    // Responder a la aplicación principal
-    if (event.source && event.source.postMessage) {
-      event.source.postMessage({
-        action: 'TIMER_STOPPED'
-      });
-    }
-  }
-  else if (data.action === 'GET_TIMER_STATE') {
-    // Calcular tiempo restante actual si el temporizador está en ejecución
+  } else if (data.action === 'UPDATE_NOTIFICATION') {
+    lastKnownTimeLeft = data.timeLeft;
+    lastKnownDuration = data.duration;
+    timerType = data.type || timerType;
+    isTimerRunning = data.isRunning;
+    updateTimerNotification(data.timeLeft, data.isRunning, data.type);
+  } else if (data.action === 'CLEAR_PROGRESS_NOTIFICATION') {
+    self.registration.getNotifications({ tag: 'pomodoro-timer-progress' }).then((notifs) => {
+      notifs.forEach((n) => n.close());
+    });
+  } else if (data.action === 'GET_TIMER_STATE') {
     let timeLeft = 0;
     if (isTimerRunning && timerEndTime) {
       timeLeft = Math.max(0, Math.round((timerEndTime - Date.now()) / 1000));
-      
-      // Si el temporizador ha terminado mientras estábamos en segundo plano
-      if (timeLeft === 0) {
-        stopBackgroundTimer();
-      }
+      if (timeLeft === 0) stopBackgroundTimer();
     }
-    
-    // Responder con el estado actual
     if (event.source && event.source.postMessage) {
       event.source.postMessage({
         action: 'TIMER_STATE',
         isRunning: isTimerRunning,
         type: timerType,
-        timeLeft: timeLeft,
+        timeLeft,
         endTime: timerEndTime
       });
     }
+  } else if (data.action === 'SHOW_NOTIFICATION') {
+    self.registration.showNotification(data.title, data.options);
   }
 });
 
-// Evento para mostrar notificaciones cuando la app está en segundo plano
+// Handle interactive actions from phone notifications
 self.addEventListener('notificationclick', (event) => {
+  const action = event.action;
   const notification = event.notification;
-  notification.close();
-  
-  // Al hacer clic en la notificación, abrimos/enfocamos la ventana de la app
-  event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((clientsArr) => {
-      // Si ya hay una ventana abierta, la enfocamos
-      const hadWindowToFocus = clientsArr.some((windowClient) => {
-        if (windowClient.url === '/' || windowClient.url.includes('/index.html')) {
-          return windowClient.focus();
-        }
-        return false;
-      });
 
-      // Si no hay ventana, abrimos una nueva
-      if (!hadWindowToFocus) {
-        clients.openWindow('/');
-      }
-    })
-  );
+  if (action === 'pause_timer') {
+    stopBackgroundTimer();
+    broadcastAction('ACTION_PAUSE');
+    updateTimerNotification(lastKnownTimeLeft, false, timerType);
+  } else if (action === 'resume_timer') {
+    startBackgroundTimer(lastKnownTimeLeft, timerType);
+    broadcastAction('ACTION_START');
+  } else if (action === 'skip_timer') {
+    stopBackgroundTimer();
+    notification.close();
+    broadcastAction('ACTION_SKIP');
+  } else {
+    // Clicked main body of notification -> open/focus app
+    notification.close();
+    event.waitUntil(
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+        for (const client of clientList) {
+          if ('focus' in client) {
+            return client.focus();
+          }
+        }
+        if (self.clients.openWindow) {
+          return self.clients.openWindow('/');
+        }
+      })
+    );
+  }
 });
 
-// Función para iniciar el temporizador en segundo plano
-function startBackgroundTimer(duration, type) {
-  stopBackgroundTimer(); // Detener cualquier temporizador existente
-  
+function broadcastAction(actionType, extraData = {}) {
+  self.clients.matchAll().then((clients) => {
+    clients.forEach((client) => {
+      client.postMessage({
+        action: actionType,
+        ...extraData
+      });
+    });
+  });
+}
+
+function startBackgroundTimer(durationSecs, type) {
+  stopBackgroundTimer();
   isTimerRunning = true;
-  timerType = type; // 'work' o 'break'
-  currentTimerDuration = duration;
-  timerEndTime = Date.now() + duration * 1000;
-  
-  // Configurar intervalo para verificar el estado del temporizador
+  timerType = type || 'work';
+  lastKnownDuration = durationSecs;
+  lastKnownTimeLeft = durationSecs;
+  timerEndTime = Date.now() + durationSecs * 1000;
+
+  // Show initial notification
+  updateTimerNotification(durationSecs, true, timerType);
+
   timerInterval = setInterval(() => {
-    const timeLeft = Math.max(0, timerEndTime - Date.now());
-    
-    if (timeLeft <= 0) {
-      // El temporizador ha terminado
+    const remainingSecs = Math.max(0, Math.round((timerEndTime - Date.now()) / 1000));
+    lastKnownTimeLeft = remainingSecs;
+
+    // Update progress notification every 5 seconds to be battery-friendly on mobile
+    if (remainingSecs % 5 === 0 && remainingSecs > 0) {
+      updateTimerNotification(remainingSecs, true, timerType);
+    }
+
+    if (remainingSecs <= 0) {
       clearInterval(timerInterval);
+      timerInterval = null;
       isTimerRunning = false;
-      
-      // Mostrar notificación
-      const title = timerType === 'work' ? 
-        '¡Hora de descansar!' : 
-        '¡Hora de trabajar!';
-      
-      const options = {
-        body: timerType === 'work' ? 
-          'Has completado tu sesión de trabajo. ¡Tómate un descanso!' : 
-          'Tu descanso ha terminado. ¡Es hora de volver a trabajar!',
-        icon: timerType === 'work' ? '/imgs/rest.jpg' : '/imgs/focus.jpg',
+
+      // Close persistent progress notification
+      self.registration.getNotifications({ tag: 'pomodoro-timer-progress' }).then((notifs) => {
+        notifs.forEach((n) => n.close());
+      });
+
+      // Show loud completion alert
+      const isWork = timerType === 'work';
+      const title = isWork ? '🎉 ¡Sesión de enfoque completada!' : '⏰ ¡Fin del descanso!';
+      const body = isWork
+        ? '¡Excelente trabajo! Tómate un respiro merecido.'
+        : '¡Descanso finalizado! Es hora de volver a enfocarte.';
+
+      self.registration.showNotification(title, {
+        body,
+        icon: isWork ? '/imgs/rest.jpg' : '/imgs/focus.jpg',
         badge: '/imgs/icons/tomato.png',
-        vibrate: [100, 50, 100],
-        requireInteraction: true
-      };
-      
-      self.registration.showNotification(title, options);
-      
-      // Informar a la aplicación principal que el temporizador ha terminado
-      broadcastTimerEnd();
+        vibrate: [200, 100, 200, 100, 300],
+        tag: 'pomodoro-session-ended',
+        renotify: true,
+        actions: [
+          { action: 'open_app', title: '🚀 Abrir App' }
+        ]
+      });
+
+      broadcastAction('TIMER_ENDED', { type: timerType });
     }
   }, 1000);
 }
 
-// Función para detener el temporizador en segundo plano
 function stopBackgroundTimer() {
   if (timerInterval) {
     clearInterval(timerInterval);
     timerInterval = null;
   }
   isTimerRunning = false;
+  timerEndTime = null;
 }
-
-// Función para informar a la aplicación principal que el temporizador ha terminado
-function broadcastTimerEnd() {
-  self.clients.matchAll().then(clients => {
-    clients.forEach(client => {
-      client.postMessage({
-        action: 'TIMER_ENDED',
-        type: timerType
-      });
-    });
-  });
-}
-

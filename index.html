@@ -1,36 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 	<head>
 		<meta charset="UTF-8" />
 		<!-- Manifest -->
 		<link rel="manifest" href="/manifest.webmanifest" />
 		<link rel="icon" href="/imgs/icons/tomato.png" />
 
-		<!-- iOS -->
+		<!-- Viewport optimized for Mobile / PWA with Safe Area insets -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+
+		<!-- iOS Web App Configurations -->
 		<link rel="apple-touch-icon" href="/imgs/icons/tomato.png" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
-		<meta name="apple-mobile-web-app-title" content="Pomodoro" />
-		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+		<meta name="apple-mobile-web-app-title" content="PomodoroFocus" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 		<!-- Windows -->
 		<meta name="msapplication-TileImage" content="/imgs/icons/tomato.png" />
-		<meta name="msapplication-TileColor" content="#232323" />
+		<meta name="msapplication-TileColor" content="#16161a" />
 
-		<!-- Android -->
-		<meta name="theme-color" content="#232323" />
+		<!-- Android & Browser Theme Color -->
+		<meta name="theme-color" content="#16161a" id="theme-color-meta" />
 		<meta name="mobile-web-app-capable" content="yes" />
 
-		<!-- SEO -->
-		<meta name="description" content="Pomodoro timer" />
-		<meta name="keywords" content="pomodoro,timer" />
+		<!-- SEO & Metadata -->
+		<meta name="description" content="Pomodoro Focus: Temporizador Pomodoro y gestor de tareas avanzado para máxima productividad." />
+		<meta name="keywords" content="pomodoro,timer,focus,productividad,tareas,temporizador" />
 		<meta name="author" content="JoseDv1" />
-		<title>Pomodoro</title>
-
-		<!-- CSS -->
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Pomodoro Task App</title>
 	</head>
 	<body>
-		<main id="app"></main>
+		<div id="app"></div>
 		<script type="module" src="/src/main.ts"></script>
 	</body>
 </html>

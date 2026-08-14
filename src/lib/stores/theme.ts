@@ -1,370 +1,372 @@
 import { writable, get, derived } from 'svelte/store';
-import { pomodoroCount } from './timer';
+import type { Theme } from '../types';
 
-// Definir una interfaz para los temas
-export interface Theme {
-	id: string;
-	name: string;
-	description: string;
-	previewColor: string;
-	price: number;
-	unlocked: boolean;
-	cssProperties: Record<string, string>;
-}
-
-// Definir los temas disponibles
 export const availableThemes: Theme[] = [
 	{
 		id: 'default-dark',
 		name: 'Oscuro Clásico',
-		description: 'El tema oscuro predeterminado para concentrarse en ambientes con poca luz.',
-		previewColor: '#242424',
+		description: 'Elegante y descansado para la vista, ideal para sesiones nocturnas.',
+		previewColor: '#1e1e24',
 		price: 0,
 		unlocked: true,
+		category: 'dark',
 		cssProperties: {
-			'--bg-primary': '#242424',
-			'--bg-secondary': '#1a1a1a',
-			'--bg-tertiary': '#333333',
-			'--text-primary': 'rgba(255, 255, 255, 0.87)',
-			'--text-secondary': 'rgba(255, 255, 255, 0.6)',
+			'--bg-primary': '#16161a',
+			'--bg-secondary': '#242629',
+			'--bg-tertiary': '#34383d',
+			'--text-primary': '#fffffe',
+			'--text-secondary': '#94a1b2',
 			'--accent-color': '#ff6347',
-			'--button-bg': '#333333',
-			'--button-hover': '#444444',
-			'--card-bg': 'rgba(255, 255, 255, 0.1)',
+			'--accent-hover': '#ff7f66',
+			'--button-bg': '#242629',
+			'--button-hover': '#34383d',
+			'--card-bg': 'rgba(36, 38, 41, 0.75)',
 			'--border-color': 'rgba(255, 255, 255, 0.1)',
-			'--shadow-color': 'rgba(0, 0, 0, 0.3)'
+			'--shadow-color': 'rgba(0, 0, 0, 0.4)',
+			'--ring-track': 'rgba(255, 255, 255, 0.08)',
+			'--ring-progress': '#ff6347',
+			'--badge-bg': 'rgba(255, 99, 71, 0.15)',
+			'color-scheme': 'dark'
 		}
 	},
 	{
 		id: 'default-light',
-		name: 'Claro Clásico',
-		description: 'El tema claro predeterminado para ambientes bien iluminados.',
-		previewColor: '#f5f5f5',
+		name: 'Claro Cristal',
+		description: 'Luminoso, limpio y fresco con alto contraste para el día.',
+		previewColor: '#f8f9fa',
 		price: 0,
 		unlocked: true,
+		category: 'light',
 		cssProperties: {
-			'--bg-primary': '#f5f5f5',
-			'--bg-secondary': '#e8e8e8',
-			'--bg-tertiary': '#d1d1d1',
-			'--text-primary': '#213547',
-			'--text-secondary': '#4a4a4a',
-			'--accent-color': '#ff6347',
-			'--button-bg': '#e0e0e0',
-			'--button-hover': '#d0d0d0',
-			'--card-bg': 'rgba(0, 0, 0, 0.05)',
-			'--border-color': 'rgba(0, 0, 0, 0.1)',
-			'--shadow-color': 'rgba(0, 0, 0, 0.1)'
+			'--bg-primary': '#f4f6f9',
+			'--bg-secondary': '#ffffff',
+			'--bg-tertiary': '#e9ecef',
+			'--text-primary': '#212529',
+			'--text-secondary': '#6c757d',
+			'--accent-color': '#e63946',
+			'--accent-hover': '#f05360',
+			'--button-bg': '#ffffff',
+			'--button-hover': '#e9ecef',
+			'--card-bg': 'rgba(255, 255, 255, 0.9)',
+			'--border-color': 'rgba(0, 0, 0, 0.08)',
+			'--shadow-color': 'rgba(0, 0, 0, 0.06)',
+			'--ring-track': 'rgba(0, 0, 0, 0.08)',
+			'--ring-progress': '#e63946',
+			'--badge-bg': 'rgba(230, 57, 70, 0.12)',
+			'color-scheme': 'light'
 		}
 	},
 	{
-		id: 'nature-green',
-		name: 'Verde Naturaleza',
-		description: 'Tema inspirado en la naturaleza para un ambiente tranquilo y relajante.',
-		previewColor: '#2c3e2e',
+		id: 'forest-zen',
+		name: 'Bosque Zen',
+		description: 'Tonalidades verdes naturales inspiradas en la calma del bosque.',
+		previewColor: '#1d3124',
 		price: 5,
 		unlocked: false,
+		category: 'dark',
 		cssProperties: {
-			'--bg-primary': '#2c3e2e',
-			'--bg-secondary': '#1e2b20',
-			'--bg-tertiary': '#3a5240',
-			'--text-primary': '#e0ede0',
-			'--text-secondary': '#bcd0bc',
-			'--accent-color': '#8fbc8f',
-			'--button-bg': '#3a5240',
-			'--button-hover': '#4a624c',
-			'--card-bg': 'rgba(255, 255, 255, 0.1)',
-			'--border-color': 'rgba(255, 255, 255, 0.15)',
-			'--shadow-color': 'rgba(0, 0, 0, 0.3)'
+			'--bg-primary': '#142219',
+			'--bg-secondary': '#1e3326',
+			'--bg-tertiary': '#2a4735',
+			'--text-primary': '#e8f5e9',
+			'--text-secondary': '#a5d6a7',
+			'--accent-color': '#66bb6a',
+			'--accent-hover': '#81c784',
+			'--button-bg': '#1e3326',
+			'--button-hover': '#2a4735',
+			'--card-bg': 'rgba(30, 51, 38, 0.8)',
+			'--border-color': 'rgba(102, 187, 106, 0.2)',
+			'--shadow-color': 'rgba(0, 0, 0, 0.4)',
+			'--ring-track': 'rgba(255, 255, 255, 0.08)',
+			'--ring-progress': '#66bb6a',
+			'--badge-bg': 'rgba(102, 187, 106, 0.15)',
+			'color-scheme': 'dark'
 		}
 	},
 	{
 		id: 'ocean-blue',
-		name: 'Azul Océano',
-		description: 'Tema inspirado en las profundidades del mar para una concentración profunda.',
-		previewColor: '#1a3a5f',
-		price: 10,
+		name: 'Océano Profundo',
+		description: 'Azul zafiro inmersivo para máxima concentración y claridad mental.',
+		previewColor: '#0f172a',
+		price: 8,
 		unlocked: false,
+		category: 'dark',
 		cssProperties: {
-			'--bg-primary': '#1a3a5f',
-			'--bg-secondary': '#0f2440',
-			'--bg-tertiary': '#2a4d74',
-			'--text-primary': '#e0f0ff',
-			'--text-secondary': '#b0d0f0',
-			'--accent-color': '#4d94ff',
-			'--button-bg': '#2a4d74',
-			'--button-hover': '#396088',
-			'--card-bg': 'rgba(255, 255, 255, 0.1)',
-			'--border-color': 'rgba(255, 255, 255, 0.15)',
-			'--shadow-color': 'rgba(0, 0, 0, 0.3)'
-		}
-	},
-
-	{
-		id: 'bubblegum',
-		name: 'Chicle',
-		description: 'Un tema divertido y colorido para mantener la energía alta.',
-		previewColor: '#ffb6c1',
-		price: 20,
-		unlocked: false,
-		cssProperties: {
-			'--bg-primary': '#ffb6c1',
-			'--bg-secondary': '#ffc1d0',
-			'--bg-tertiary': '#ffaabb',
-			'--text-primary': '#4a2d38',
-			'--text-secondary': '#6d4458',
-			'--accent-color': '#ff69b4',
-			'--button-bg': '#ffaabb',
-			'--button-hover': '#ff9bb0',
-			'--card-bg': 'rgba(255, 255, 255, 0.3)',
-			'--border-color': 'rgba(255, 255, 255, 0.3)',
-			'--shadow-color': 'rgba(0, 0, 0, 0.1)'
-		}
-	},
-	{
-		id: 'pastel-green',
-		name: 'Verde Pastel',
-		description: 'Un suave tema verde pastel para crear un ambiente relajado y tranquilo.',
-		previewColor: '#c1e1c1',
-		price: 12,
-		unlocked: false,
-		cssProperties: {
-			'--bg-primary': '#c1e1c1',
-			'--bg-secondary': '#d5ebd5',
-			'--bg-tertiary': '#b3d8b3',
-			'--text-primary': '#2c4c2c',
-			'--text-secondary': '#3b633b',
-			'--accent-color': '#5cb85c',
-			'--button-bg': '#b3d8b3',
-			'--button-hover': '#a0cda0',
-			'--card-bg': 'rgba(255, 255, 255, 0.4)',
-			'--border-color': 'rgba(0, 0, 0, 0.1)',
-			'--shadow-color': 'rgba(0, 0, 0, 0.1)'
-		}
-	},
-
-	{
-		id: 'midnight-purple',
-		name: 'Púrpura Medianoche',
-		description: 'Elegante tema púrpura oscuro para una concentración profunda en ambientes nocturnos.',
-		previewColor: '#2E1A47',
-		price: 25,
-		unlocked: false,
-		cssProperties: {
-			'--bg-primary': '#2E1A47',
-			'--bg-secondary': '#1E0F2E',
-			'--bg-tertiary': '#3E2860',
-			'--text-primary': '#E6D7FF',
-			'--text-secondary': '#B79FE0',
-			'--accent-color': '#9D4EDD',
-			'--button-bg': '#3E2860',
-			'--button-hover': '#4F3575',
-			'--card-bg': 'rgba(255, 255, 255, 0.08)',
-			'--border-color': 'rgba(255, 255, 255, 0.12)',
-			'--shadow-color': 'rgba(0, 0, 0, 0.35)'
-		}
-	},
-	{
-		id: 'coffee-break',
-		name: 'Pausa Café',
-		description: 'Cálidos tonos café y crema para una productividad acogedora y relajada.',
-		previewColor: '#4A3B2F',
-		price: 15,
-		unlocked: false,
-		cssProperties: {
-			'--bg-primary': '#4A3B2F',
-			'--bg-secondary': '#3A2E25',
-			'--bg-tertiary': '#5A493C',
-			'--text-primary': '#F2E9D8',
-			'--text-secondary': '#D9C5A9',
-			'--accent-color': '#BF8756',
-			'--button-bg': '#5A493C',
-			'--button-hover': '#6A594C',
-			'--card-bg': 'rgba(242, 233, 216, 0.1)',
-			'--border-color': 'rgba(242, 233, 216, 0.15)',
-			'--shadow-color': 'rgba(0, 0, 0, 0.25)'
+			'--bg-primary': '#0a0f1d',
+			'--bg-secondary': '#131e36',
+			'--bg-tertiary': '#1e2d4e',
+			'--text-primary': '#f0f6fc',
+			'--text-secondary': '#93b4d7',
+			'--accent-color': '#38bdf8',
+			'--accent-hover': '#60a5fa',
+			'--button-bg': '#131e36',
+			'--button-hover': '#1e2d4e',
+			'--card-bg': 'rgba(19, 30, 54, 0.8)',
+			'--border-color': 'rgba(56, 189, 248, 0.2)',
+			'--shadow-color': 'rgba(0, 0, 0, 0.45)',
+			'--ring-track': 'rgba(255, 255, 255, 0.08)',
+			'--ring-progress': '#38bdf8',
+			'--badge-bg': 'rgba(56, 189, 248, 0.15)',
+			'color-scheme': 'dark'
 		}
 	},
 	{
 		id: 'cyber-neon',
 		name: 'Neón Cibernético',
-		description: 'Futurista tema con colores neón brillantes sobre fondo oscuro para sesiones nocturnas energizantes.',
-		previewColor: '#0D0D15',
-		price: 30,
+		description: 'Vibraciones synthwave cyberpunk con detalles en cian y fucsia.',
+		previewColor: '#0d0d17',
+		price: 12,
 		unlocked: false,
+		category: 'colorful',
 		cssProperties: {
-			'--bg-primary': '#0D0D15',
-			'--bg-secondary': '#08080E',
-			'--bg-tertiary': '#15152A',
-			'--text-primary': '#F0F8FF',
-			'--text-secondary': '#C0D8FF',
-			'--accent-color': '#00F5FF',
-			'--button-bg': '#15152A',
-			'--button-hover': '#1E1E3A',
-			'--card-bg': 'rgba(0, 245, 255, 0.05)',
-			'--border-color': 'rgba(0, 245, 255, 0.2)',
-			'--shadow-color': 'rgba(0, 245, 255, 0.15)'
+			'--bg-primary': '#0a0914',
+			'--bg-secondary': '#16132b',
+			'--bg-tertiary': '#241f45',
+			'--text-primary': '#f8f9fa',
+			'--text-secondary': '#c4b5fd',
+			'--accent-color': '#06b6d4',
+			'--accent-hover': '#22d3ee',
+			'--button-bg': '#16132b',
+			'--button-hover': '#241f45',
+			'--card-bg': 'rgba(22, 19, 43, 0.85)',
+			'--border-color': 'rgba(6, 182, 212, 0.25)',
+			'--shadow-color': 'rgba(0, 0, 0, 0.5)',
+			'--ring-track': 'rgba(255, 255, 255, 0.08)',
+			'--ring-progress': '#06b6d4',
+			'--badge-bg': 'rgba(6, 182, 212, 0.18)',
+			'color-scheme': 'dark'
 		}
 	},
-
 	{
-		id: 'golden-desert',
-		name: 'Desierto Dorado',
-		description: 'Inspirado en las dunas doradas y atardeceres del desierto para un ambiente cálido y acogedor.',
-		previewColor: '#B8860B',
+		id: 'golden-sunset',
+		name: 'Atardecer Dorado',
+		description: 'Cálidos matices dorados y ámbar que inspiran creatividad.',
+		previewColor: '#2b1b11',
+		price: 15,
+		unlocked: false,
+		category: 'colorful',
+		cssProperties: {
+			'--bg-primary': '#1d120a',
+			'--bg-secondary': '#2e1c12',
+			'--bg-tertiary': '#442a1b',
+			'--text-primary': '#fff3e0',
+			'--text-secondary': '#ffcc80',
+			'--accent-color': '#f59e0b',
+			'--accent-hover': '#fbbf24',
+			'--button-bg': '#2e1c12',
+			'--button-hover': '#442a1b',
+			'--card-bg': 'rgba(46, 28, 18, 0.8)',
+			'--border-color': 'rgba(245, 158, 11, 0.25)',
+			'--shadow-color': 'rgba(0, 0, 0, 0.4)',
+			'--ring-track': 'rgba(255, 255, 255, 0.08)',
+			'--ring-progress': '#f59e0b',
+			'--badge-bg': 'rgba(245, 158, 11, 0.15)',
+			'color-scheme': 'dark'
+		}
+	},
+	{
+		id: 'sakura-pink',
+		name: 'Cerezo Sakura',
+		description: 'Delicado tema primaveral con suaves tonos rosa y flor de cerezo.',
+		previewColor: '#fff0f3',
+		price: 18,
+		unlocked: false,
+		category: 'light',
+		cssProperties: {
+			'--bg-primary': '#fff5f7',
+			'--bg-secondary': '#ffffff',
+			'--bg-tertiary': '#ffe3e8',
+			'--text-primary': '#592938',
+			'--text-secondary': '#8c485e',
+			'--accent-color': '#e64980',
+			'--accent-hover': '#f06595',
+			'--button-bg': '#ffffff',
+			'--button-hover': '#ffe3e8',
+			'--card-bg': 'rgba(255, 255, 255, 0.92)',
+			'--border-color': 'rgba(230, 73, 128, 0.18)',
+			'--shadow-color': 'rgba(230, 73, 128, 0.08)',
+			'--ring-track': 'rgba(230, 73, 128, 0.1)',
+			'--ring-progress': '#e64980',
+			'--badge-bg': 'rgba(230, 73, 128, 0.12)',
+			'color-scheme': 'light'
+		}
+	},
+	{
+		id: 'midnight-amethyst',
+		name: 'Amatista Mística',
+		description: 'Misterioso púrpura medianoche con acentos radiantes de amatista.',
+		previewColor: '#1a102f',
 		price: 20,
 		unlocked: false,
+		category: 'dark',
 		cssProperties: {
-			'--bg-primary': '#B8860B',
-			'--bg-secondary': '#996D09',
-			'--bg-tertiary': '#D9A11D',
-			'--text-primary': '#FFF8E8',
-			'--text-secondary': '#FFE9B8',
-			'--accent-color': '#FF8C00',
-			'--button-bg': '#D9A11D',
-			'--button-hover': '#EDAF1E',
-			'--card-bg': 'rgba(255, 248, 232, 0.15)',
-			'--border-color': 'rgba(255, 248, 232, 0.2)',
-			'--shadow-color': 'rgba(0, 0, 0, 0.15)'
+			'--bg-primary': '#110a20',
+			'--bg-secondary': '#1d1235',
+			'--bg-tertiary': '#2d1c52',
+			'--text-primary': '#f3e8ff',
+			'--text-secondary': '#c084fc',
+			'--accent-color': '#a855f7',
+			'--accent-hover': '#c084fc',
+			'--button-bg': '#1d1235',
+			'--button-hover': '#2d1c52',
+			'--card-bg': 'rgba(29, 18, 53, 0.85)',
+			'--border-color': 'rgba(168, 85, 247, 0.25)',
+			'--shadow-color': 'rgba(0, 0, 0, 0.45)',
+			'--ring-track': 'rgba(255, 255, 255, 0.08)',
+			'--ring-progress': '#a855f7',
+			'--badge-bg': 'rgba(168, 85, 247, 0.18)',
+			'color-scheme': 'dark'
 		}
 	},
 	{
-		id: 'arctic-frost',
-		name: 'Escarcha Ártica',
-		description: 'Tonos fríos de azul y blanco que evocan la calma y claridad de un paisaje helado.',
-		previewColor: '#D6EAF8',
-		price: 17,
+		id: 'cozy-coffee',
+		name: 'Café de Especialidad',
+		description: 'Aromático y acogedor, como tu cafetería favorita de trabajo.',
+		previewColor: '#2b2118',
+		price: 22,
 		unlocked: false,
+		category: 'dark',
 		cssProperties: {
-			'--bg-primary': '#D6EAF8',
-			'--bg-secondary': '#E5F1F8',
-			'--bg-tertiary': '#BED8F0',
-			'--text-primary': '#1A5276',
-			'--text-secondary': '#2874A6',
-			'--accent-color': '#3498DB',
-			'--button-bg': '#BED8F0',
-			'--button-hover': '#A5C6E8',
-			'--card-bg': 'rgba(26, 82, 118, 0.08)',
-			'--border-color': 'rgba(26, 82, 118, 0.15)',
-			'--shadow-color': 'rgba(0, 0, 0, 0.1)'
+			'--bg-primary': '#1c150f',
+			'--bg-secondary': '#2c221a',
+			'--bg-tertiary': '#403227',
+			'--text-primary': '#f7f1eb',
+			'--text-secondary': '#d0bcad',
+			'--accent-color': '#d97706',
+			'--accent-hover': '#f59e0b',
+			'--button-bg': '#2c221a',
+			'--button-hover': '#403227',
+			'--card-bg': 'rgba(44, 34, 26, 0.85)',
+			'--border-color': 'rgba(217, 119, 6, 0.2)',
+			'--shadow-color': 'rgba(0, 0, 0, 0.4)',
+			'--ring-track': 'rgba(255, 255, 255, 0.08)',
+			'--ring-progress': '#d97706',
+			'--badge-bg': 'rgba(217, 119, 6, 0.15)',
+			'color-scheme': 'dark'
 		}
 	},
+	{
+		id: 'matcha-tea',
+		name: 'Té Matcha',
+		description: 'Paz y armonía con suaves tonos de té verde japonés y crema.',
+		previewColor: '#eef3eb',
+		price: 25,
+		unlocked: false,
+		category: 'light',
+		cssProperties: {
+			'--bg-primary': '#f3f6f1',
+			'--bg-secondary': '#ffffff',
+			'--bg-tertiary': '#e2ebdcf0',
+			'--text-primary': '#2a3b26',
+			'--text-secondary': '#577350',
+			'--accent-color': '#4d7c0f',
+			'--accent-hover': '#65a30d',
+			'--button-bg': '#ffffff',
+			'--button-hover': '#e2ebdc',
+			'--card-bg': 'rgba(255, 255, 255, 0.92)',
+			'--border-color': 'rgba(77, 124, 15, 0.18)',
+			'--shadow-color': 'rgba(77, 124, 15, 0.06)',
+			'--ring-track': 'rgba(77, 124, 15, 0.1)',
+			'--ring-progress': '#4d7c0f',
+			'--badge-bg': 'rgba(77, 124, 15, 0.12)',
+			'color-scheme': 'light'
+		}
+	}
 ];
 
-// Función para cargar temas desbloqueados desde localStorage
-function loadUnlockedThemes() {
+function loadUnlockedThemes(): Theme[] {
 	if (typeof window === 'undefined') return availableThemes;
-
-	const unlockedThemesStr = localStorage.getItem('unlockedThemes');
-	if (!unlockedThemesStr) return availableThemes;
-
 	try {
-		const unlockedThemeIds = JSON.parse(unlockedThemesStr) as string[];
-		return availableThemes.map(theme => ({
-			...theme,
-			unlocked: theme.unlocked || unlockedThemeIds.includes(theme.id)
+		const raw = localStorage.getItem('unlockedThemes');
+		if (!raw) return availableThemes;
+		const unlockedIds: string[] = JSON.parse(raw);
+		return availableThemes.map((t) => ({
+			...t,
+			unlocked: t.unlocked || unlockedIds.includes(t.id),
 		}));
 	} catch (e) {
-		console.error('Error al cargar temas desbloqueados:', e);
+		console.error('Error loading unlocked themes:', e);
 		return availableThemes;
 	}
 }
 
-// Función para obtener el tema inicial
 function getInitialThemeId(): string {
 	if (typeof window === 'undefined') return 'default-dark';
-
-	// Verificar si el usuario ya ha elegido un tema
-	const savedThemeId = localStorage.getItem('activeThemeId');
-	if (savedThemeId) {
-		// Verificar que el tema guardado existe y está desbloqueado
-		const themes = loadUnlockedThemes();
-		const savedTheme = themes.find(t => t.id === savedThemeId);
-		if (savedTheme && savedTheme.unlocked) return savedThemeId;
+	const saved = localStorage.getItem('activeThemeId');
+	if (saved) {
+		const all = loadUnlockedThemes();
+		const match = all.find((t) => t.id === saved && t.unlocked);
+		if (match) return saved;
 	}
-
-	// Si no, usar la preferencia del sistema (claro u oscuro)
-	return window.matchMedia('(prefers-color-scheme: light)').matches
+	return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
 		? 'default-light'
 		: 'default-dark';
 }
 
-// Store para los temas disponibles
 export const themes = writable<Theme[]>(loadUnlockedThemes());
-
-// Store para el ID del tema activo
 export const activeThemeId = writable<string>(getInitialThemeId());
 
-// Store derivado para el tema activo completo
 export const activeTheme = derived(
 	[themes, activeThemeId],
 	([$themes, $activeThemeId]) => {
-		return $themes.find(t => t.id === $activeThemeId) || $themes[0];
+		return $themes.find((t) => t.id === $activeThemeId) || $themes[0];
 	}
 );
 
-// Función para cambiar el tema activo
+export function applyThemeProperties(theme: Theme): void {
+	if (typeof document === 'undefined' || !theme) return;
+	const root = document.documentElement;
+	Object.entries(theme.cssProperties).forEach(([prop, val]) => {
+		if (prop === 'color-scheme') {
+			root.style.colorScheme = val;
+		} else {
+			root.style.setProperty(prop, val);
+		}
+	});
+
+	if (typeof document !== 'undefined' && typeof document.getElementById === 'function') {
+		const metaThemeColor = document.getElementById('theme-color-meta');
+		if (metaThemeColor && theme.cssProperties['--bg-primary']) {
+			metaThemeColor.setAttribute('content', theme.cssProperties['--bg-primary']);
+		}
+	}
+}
+
 export function setTheme(themeId: string): void {
-	activeThemeId.update(currentId => {
-		if (typeof window !== 'undefined') {
-			// Guardar preferencia en localStorage
-			localStorage.setItem('activeThemeId', themeId);
-		}
-		return themeId;
-	});
-}
-
-// Función para desbloquear un tema con pomodoros
-export function unlockTheme(themeId: string): boolean {
-	let success = false;
-
-	themes.update(currentThemes => {
-		const themeToUnlock = currentThemes.find(t => t.id === themeId);
-		if (!themeToUnlock || themeToUnlock.unlocked) return currentThemes;
-
-		const currentPomodoros = get(pomodoroCount);
-
-		if (currentPomodoros >= themeToUnlock.price) {
-			// Tenemos suficientes pomodoros para desbloquear
-			success = true;
-
-			// Actualizar el array de temas desbloqueados en localStorage
+	themes.update((all) => {
+		const target = all.find((t) => t.id === themeId);
+		if (target && target.unlocked) {
+			activeThemeId.set(themeId);
 			if (typeof window !== 'undefined') {
-				const unlockedThemesStr = localStorage.getItem('unlockedThemes');
-				let unlockedThemes: string[] = [];
-
-				try {
-					unlockedThemes = unlockedThemesStr ? JSON.parse(unlockedThemesStr) : [];
-				} catch (e) {
-					console.error('Error al parsear temas desbloqueados:', e);
-				}
-
-				unlockedThemes.push(themeId);
-				localStorage.setItem('unlockedThemes', JSON.stringify(unlockedThemes));
+				localStorage.setItem('activeThemeId', themeId);
 			}
-
-			// Actualizar el estado de temas
-			return currentThemes.map(t =>
-				t.id === themeId
-					? { ...t, unlocked: true }
-					: t
-			);
+			applyThemeProperties(target);
 		}
-
-		return currentThemes;
+		return all;
 	});
-
-	return success;
 }
 
-// Inicializar el tema si estamos en el navegador
+export function unlockTheme(themeId: string, currentBalance: number): boolean {
+	const all = get(themes);
+	const target = all.find((t) => t.id === themeId);
+	if (!target || target.unlocked) return false;
+	if (currentBalance < target.price) return false;
+
+	themes.update((current) => {
+		const updated = current.map((t) => (t.id === themeId ? { ...t, unlocked: true } : t));
+		if (typeof window !== 'undefined') {
+			const unlockedList = updated.filter((t) => t.unlocked).map((t) => t.id);
+			localStorage.setItem('unlockedThemes', JSON.stringify(unlockedList));
+		}
+		return updated;
+	});
+
+	setTheme(themeId);
+	return true;
+}
+
 if (typeof window !== 'undefined') {
-	activeTheme.subscribe(theme => {
-		if (!theme) return;
-
-		// Aplicar las propiedades CSS del tema
-		Object.entries(theme.cssProperties).forEach(([property, value]) => {
-			document.documentElement.style.setProperty(property, value);
-		});
+	activeTheme.subscribe((t) => {
+		if (t) applyThemeProperties(t);
 	});
 }
-

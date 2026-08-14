@@ -1,36 +1,45 @@
 <script lang="ts">
 	import { pomodoroCount } from "../stores/timer";
+
+	let { onclick }: { onclick?: () => void } = $props();
 </script>
 
-<div class="pomodoro-counter">
-	<img src="/imgs/icons/tomato.png" alt="Pomodoro" />
-	<span>{$pomodoroCount}</span>
-</div>
+<button
+	class="pomodoro-counter-badge"
+	{onclick}
+	title="Tomates completados acumulados"
+	aria-label="Contador de Pomodoros"
+>
+	<img src="/imgs/icons/tomato.png" alt="Pomodoro" class="counter-img" />
+	<span class="counter-num">{$pomodoroCount}</span>
+</button>
 
 <style>
-	.pomodoro-counter {
-		position: fixed;
-		top: 1rem;
-		right: 1rem;
-		display: flex;
+	.pomodoro-counter-badge {
+		display: inline-flex;
 		align-items: center;
-		gap: 0.5rem;
-		background-color: var(--card-bg);
-		padding: 0.5rem;
+		gap: 0.45rem;
+		background-color: var(--badge-bg);
+		border: 1px solid var(--accent-color);
+		padding: 0.4rem 0.8rem;
 		border-radius: 50px;
-		box-shadow: 0 2px 5px var(--shadow-color);
-		z-index: 1000;
-		transition: all 0.3s ease;
+		cursor: pointer;
+		transition: all 0.2s ease;
 	}
 
-	img {
-		width: 2rem;
-		height: 2rem;
+	.pomodoro-counter-badge:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px var(--shadow-color);
 	}
 
-	span {
-		font-weight: bold;
-		font-size: 1.2rem;
-		color: var(--text-primary);
+	.counter-img {
+		width: 20px;
+		height: 20px;
+	}
+
+	.counter-num {
+		font-weight: 800;
+		font-size: 0.95rem;
+		color: var(--accent-color);
 	}
 </style>
