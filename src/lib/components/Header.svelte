@@ -22,46 +22,44 @@
 </script>
 
 <header class="app-header">
-	<div class="header-top-row">
-		<div class="header-brand">
-			<div class="logo-wrapper">
-				<img src="/imgs/icons/tomato.png" alt="Tomatito" class="brand-logo" />
-			</div>
-			<div class="brand-text">
-				<h1 class="brand-title">Pomodoro<span class="accent">Focus</span></h1>
-				<span class="brand-subtitle">Gestión de Tiempo & Tareas</span>
-			</div>
+	<div class="header-brand-side">
+		<div class="logo-wrapper">
+			<img src="/imgs/icons/tomato.png" alt="Tomatito" class="brand-logo" />
 		</div>
-
-		<!-- Status Badges (Streak & Tomato) -->
-		<div class="header-badges">
-			<!-- Streak Pill -->
-			<button
-				class="pill-badge streak-pill"
-				onclick={onOpenStats}
-				title="Racha de productividad diaria"
-				aria-label="Ver estadísticas y racha diaria"
-			>
-				<span class="pill-icon">🔥</span>
-				<span class="pill-text">{$stats.currentStreak}d</span>
-			</button>
-
-			<!-- Tomato Balance Pill -->
-			<button
-				class="pill-badge tomato-pill"
-				onclick={onOpenThemeStore}
-				title="Tomates acumulados. ¡Úsalos en la Tienda!"
-				aria-label="Abrir tienda de temas"
-			>
-				<img src="/imgs/icons/tomato.png" alt="Pomodoro" class="pill-tomato-img" />
-				<span class="pill-count">{$pomodoroCount}</span>
-			</button>
+		<div class="brand-text">
+			<h1 class="brand-title">Pomodoro<span class="accent">Focus</span></h1>
+			<span class="brand-subtitle">Gestión de Tiempo & Tareas</span>
 		</div>
 	</div>
 
-	<!-- Action Controls -->
-	<div class="header-actions">
-		<!-- PWA Install Button (Mobile & Desktop) -->
+	<!-- Center/Right Badges (Streak & Tomato Counter) -->
+	<div class="header-badges">
+		<!-- Streak Pill -->
+		<button
+			class="pill-badge streak-pill"
+			onclick={onOpenStats}
+			title="Racha de productividad diaria"
+			aria-label="Ver estadísticas y racha diaria"
+		>
+			<span class="pill-icon">🔥</span>
+			<span class="pill-text">{$stats.currentStreak}d</span>
+		</button>
+
+		<!-- Tomato Balance Pill -->
+		<button
+			class="pill-badge tomato-pill"
+			onclick={onOpenThemeStore}
+			title="Tomates acumulados. ¡Úsalos en la Tienda!"
+			aria-label="Abrir tienda de temas"
+		>
+			<img src="/imgs/icons/tomato.png" alt="Pomodoro" class="pill-tomato-img" />
+			<span class="pill-count">{$pomodoroCount}</span>
+		</button>
+	</div>
+
+	<!-- Desktop Actions (Visible only on Desktop > 768px) -->
+	<div class="header-desktop-actions">
+		<!-- PWA Install Button -->
 		{#if $deferredInstallPrompt && !$isAppInstalled}
 			<button
 				class="pill-badge install-pill"
@@ -192,7 +190,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: max(0.75rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) 0.75rem max(1rem, env(safe-area-inset-left));
+		padding: max(0.6rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right)) 0.6rem max(1.25rem, env(safe-area-inset-left));
 		background-color: var(--card-bg);
 		backdrop-filter: blur(12px);
 		-webkit-backdrop-filter: blur(12px);
@@ -203,16 +201,10 @@
 		gap: 0.75rem;
 		width: 100%;
 		max-width: 100%;
+		box-sizing: border-box;
 	}
 
-	.header-top-row {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		min-width: 0;
-	}
-
-	.header-brand {
+	.header-brand-side {
 		display: flex;
 		align-items: center;
 		gap: 0.65rem;
@@ -233,8 +225,8 @@
 	}
 
 	.brand-logo {
-		width: 24px;
-		height: 24px;
+		width: 22px;
+		height: 22px;
 		object-fit: contain;
 		animation: bounceSlow 3s ease-in-out infinite;
 	}
@@ -273,11 +265,10 @@
 		gap: 0.4rem;
 	}
 
-	.header-actions {
+	.header-desktop-actions {
 		display: flex;
 		align-items: center;
-		gap: 0.4rem;
-		flex-shrink: 0;
+		gap: 0.45rem;
 	}
 
 	.pill-badge {
@@ -372,10 +363,13 @@
 		font-weight: 700;
 	}
 
-	@media (max-width: 640px) {
+	@media (max-width: 768px) {
 		.app-header {
-			padding: max(0.5rem, env(safe-area-inset-top)) 0.6rem 0.5rem 0.6rem;
-			gap: 0.4rem;
+			padding: max(0.5rem, env(safe-area-inset-top)) 0.75rem 0.5rem 0.75rem;
+		}
+
+		.header-desktop-actions {
+			display: none;
 		}
 
 		.brand-subtitle {
@@ -385,38 +379,13 @@
 		.brand-title {
 			font-size: 1.05rem;
 		}
-
-		.header-top-row {
-			flex: 1;
-			justify-content: space-between;
-			min-width: 0;
-		}
-
-		.install-text {
-			display: none;
-		}
-
-		.shortcut-btn {
-			display: none;
-		}
 	}
 
-	@media (max-width: 420px) {
-		.brand-title span.accent {
-			display: inline;
-		}
-
+	@media (max-width: 380px) {
 		.pill-badge {
 			padding: 0.25rem 0.45rem;
-			font-size: 0.76rem;
+			font-size: 0.75rem;
 			min-height: 28px;
-		}
-
-		.icon-btn {
-			width: 32px;
-			height: 32px;
-			min-width: 32px;
-			border-radius: 8px;
 		}
 	}
 </style>

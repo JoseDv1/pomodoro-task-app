@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import Header from "./lib/components/Header.svelte";
+	import MobileNav from "./lib/components/MobileNav.svelte";
 	import Timer from "./lib/components/Timer.svelte";
 	import TaskList from "./lib/components/TaskList.svelte";
 	import SettingsModal from "./lib/components/SettingsModal.svelte";
@@ -95,6 +96,14 @@
 		</p>
 	</footer>
 
+	<!-- Bottom Mobile Navigation Bar (Visible only on screens <= 768px) -->
+	<MobileNav
+		onOpenSettings={() => (isSettingsOpen = true)}
+		onOpenThemeStore={() => (isThemeStoreOpen = true)}
+		onOpenStats={() => (isStatsOpen = true)}
+		onOpenAmbient={() => (isAmbientOpen = true)}
+	/>
+
 	<!-- Interactive Modals -->
 	<SettingsModal
 		isOpen={isSettingsOpen}
@@ -129,6 +138,9 @@
 		display: flex;
 		flex-direction: column;
 		background-color: var(--bg-primary);
+		width: 100%;
+		max-width: 100%;
+		position: relative;
 	}
 
 	/* Mobile Segmented Bar */
@@ -140,6 +152,8 @@
 		border-radius: 50px;
 		padding: 0.25rem;
 		gap: 0.25rem;
+		max-width: 100%;
+		box-sizing: border-box;
 	}
 
 	.segmented-tab {
@@ -181,6 +195,7 @@
 		gap: 2rem;
 		align-items: start;
 		flex: 1;
+		box-sizing: border-box;
 	}
 
 	.timer-column,
@@ -189,6 +204,7 @@
 		flex-direction: column;
 		gap: 1.5rem;
 		width: 100%;
+		min-width: 0;
 	}
 
 	.app-footer {
@@ -206,7 +222,7 @@
 
 		.app-main-content {
 			grid-template-columns: 1fr;
-			padding: 1rem;
+			padding: 0.75rem 1rem 5rem 1rem;
 			gap: 1rem;
 		}
 
@@ -219,6 +235,10 @@
 		.tasks-column.mobile-visible {
 			display: flex;
 			animation: fadeIn 0.2s ease;
+		}
+
+		.app-footer {
+			margin-bottom: 4.5rem;
 		}
 	}
 </style>
