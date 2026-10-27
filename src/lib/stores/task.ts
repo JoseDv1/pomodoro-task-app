@@ -40,7 +40,12 @@ export const taskFilter = writable<'all' | 'active' | 'completed'>('all');
 export const taskSearch = writable<string>('');
 
 if (typeof window !== 'undefined') {
+	let initTasksSync = false;
 	tasks.subscribe((list) => {
+		if (!initTasksSync) {
+			initTasksSync = true;
+			return;
+		}
 		try {
 			localStorage.setItem(TASK_STORAGE_KEY, JSON.stringify(list));
 		} catch (e) {
@@ -48,7 +53,12 @@ if (typeof window !== 'undefined') {
 		}
 	});
 
+	let initActiveSync = false;
 	activeTaskId.subscribe((id) => {
+		if (!initActiveSync) {
+			initActiveSync = true;
+			return;
+		}
 		try {
 			if (id) {
 				localStorage.setItem(ACTIVE_TASK_KEY, id);
@@ -65,38 +75,53 @@ export const activeTask = derived(
 	[tasks, activeTaskId],
 	([$tasks, $activeTaskId]) => {
 		if (!$activeTaskId) return null;
-		return $tasks.find((t) => t.id === $activeTaskId) || null;
+		for (let i = 0; i < $tasks.length; i++) {
+			if ($tasks[i].id === $activeTaskId) return $tasks[i];
+		}
+		return null;
 	}
 );
 
 export const filteredTasks = derived(
 	[tasks, taskFilter, taskSearch],
 	([$tasks, $filter, $search]) => {
-		let result = $tasks;
-
-		if ($filter === 'active') {
-			result = result.filter((t) => !t.completed);
-		} else if ($filter === 'completed') {
-			result = result.filter((t) => t.completed);
+		const query = $search.trim().toLowerCase();
+		if ($filter === 'all' && !query) {
+			return $tasks;
 		}
 
-		if ($search.trim()) {
-			const query = $search.toLowerCase().trim();
-			result = result.filter((t) =>
-				t.name.toLowerCase().includes(query) || (t.category && t.category.toLowerCase().includes(query))
-			);
+		const out: Task[] = [];
+		for (let i = 0; i < $tasks.length; i++) {
+			const t = $tasks[i];
+			if ($filter === 'active' && t.completed) continue;
+			if ($filter === 'completed' && !t.completed) continue;
+			if (
+				query &&
+				!t.name.toLowerCase().includes(query) &&
+				!(t.category && t.category.toLowerCase().includes(query))
+			) {
+				continue;
+			}
+			out.push(t);
 		}
-
-		return result;
+		return out;
 	}
 );
 
 export const taskStats = derived(tasks, ($tasks) => {
 	const total = $tasks.length;
-	const completed = $tasks.filter((t) => t.completed).length;
+	let completed = 0;
+	let estimatedTotal = 0;
+	let completedTotal = 0;
+
+	for (let i = 0; i < total; i++) {
+		const t = $tasks[i];
+		if (t.completed) completed++;
+		estimatedTotal += t.estimatedPomodoros || 1;
+		completedTotal += t.completedPomodoros || 0;
+	}
+
 	const active = total - completed;
-	const estimatedTotal = $tasks.reduce((sum, t) => sum + (t.estimatedPomodoros || 1), 0);
-	const completedTotal = $tasks.reduce((sum, t) => sum + (t.completedPomodoros || 0), 0);
 
 	return {
 		total,

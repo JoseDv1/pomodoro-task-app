@@ -1,4 +1,5 @@
 import type { AmbientSoundId } from '../types';
+import { notifyGoAudioAmbient } from './goBridge';
 
 let audioCtx: AudioContext | null = null;
 let currentSourceNode: AudioNode | null = null;
@@ -53,6 +54,11 @@ function createNoiseBuffer(ctx: AudioContext, type: 'white' | 'pink' | 'brown'):
 
 export function setAmbientSound(type: AmbientSoundId, volume = 0.3): void {
 	if (typeof window === 'undefined') return;
+
+	if (notifyGoAudioAmbient(type, volume, type !== 'off')) {
+		currentAmbientType = type;
+		return;
+	}
 
 	stopAmbientSound();
 
@@ -140,12 +146,16 @@ export function setAmbientSound(type: AmbientSoundId, volume = 0.3): void {
 }
 
 export function updateAmbientVolume(volume: number): void {
+	if (currentAmbientType !== 'off' && notifyGoAudioAmbient(currentAmbientType, volume, true)) {
+		return;
+	}
 	if (masterGain && audioCtx) {
 		masterGain.gain.setValueAtTime(Math.max(0, Math.min(1, volume * 0.5)), audioCtx.currentTime);
 	}
 }
 
 export function stopAmbientSound(): void {
+	notifyGoAudioAmbient('off', 0, false);
 	if (currentSourceNode) {
 		try {
 			(currentSourceNode as AudioBufferSourceNode).stop();

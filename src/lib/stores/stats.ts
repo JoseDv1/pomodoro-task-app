@@ -53,7 +53,12 @@ function loadStats(): Stats {
 export const stats = writable<Stats>(loadStats());
 
 if (typeof window !== 'undefined') {
+	let initStatsSync = false;
 	stats.subscribe((val) => {
+		if (!initStatsSync) {
+			initStatsSync = true;
+			return;
+		}
 		try {
 			localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(val));
 		} catch (e) {

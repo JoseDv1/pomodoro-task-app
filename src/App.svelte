@@ -10,6 +10,7 @@
 	import AmbientModal from "./lib/components/AmbientModal.svelte";
 	import ShortcutsModal from "./lib/components/ShortcutsModal.svelte";
 	import { setupKeyboardShortcuts } from "./lib/utils/shortcuts";
+	import { initGoBridge } from "./lib/utils/goBridge";
 	import { taskStats } from "./lib/stores/task";
 
 	let isSettingsOpen = $state(false);
@@ -29,6 +30,8 @@
 	}
 
 	onMount(() => {
+		void initGoBridge();
+
 		const cleanupShortcuts = setupKeyboardShortcuts({
 			onOpenShortcuts: () => (isShortcutsOpen = true),
 			onCloseModals: closeAllModals,
@@ -104,31 +107,41 @@
 		onOpenAmbient={() => (isAmbientOpen = true)}
 	/>
 
-	<!-- Interactive Modals -->
-	<SettingsModal
-		isOpen={isSettingsOpen}
-		onClose={() => (isSettingsOpen = false)}
-	/>
+	<!-- Interactive Modals (Lazy-mounted only when open for 0 background listeners/subscriptions) -->
+	{#if isSettingsOpen}
+		<SettingsModal
+			isOpen={isSettingsOpen}
+			onClose={() => (isSettingsOpen = false)}
+		/>
+	{/if}
 
-	<ThemeStoreModal
-		isOpen={isThemeStoreOpen}
-		onClose={() => (isThemeStoreOpen = false)}
-	/>
+	{#if isThemeStoreOpen}
+		<ThemeStoreModal
+			isOpen={isThemeStoreOpen}
+			onClose={() => (isThemeStoreOpen = false)}
+		/>
+	{/if}
 
-	<StatsModal
-		isOpen={isStatsOpen}
-		onClose={() => (isStatsOpen = false)}
-	/>
+	{#if isStatsOpen}
+		<StatsModal
+			isOpen={isStatsOpen}
+			onClose={() => (isStatsOpen = false)}
+		/>
+	{/if}
 
-	<AmbientModal
-		isOpen={isAmbientOpen}
-		onClose={() => (isAmbientOpen = false)}
-	/>
+	{#if isAmbientOpen}
+		<AmbientModal
+			isOpen={isAmbientOpen}
+			onClose={() => (isAmbientOpen = false)}
+		/>
+	{/if}
 
-	<ShortcutsModal
-		isOpen={isShortcutsOpen}
-		onClose={() => (isShortcutsOpen = false)}
-	/>
+	{#if isShortcutsOpen}
+		<ShortcutsModal
+			isOpen={isShortcutsOpen}
+			onClose={() => (isShortcutsOpen = false)}
+		/>
+	{/if}
 </div>
 
 <style>

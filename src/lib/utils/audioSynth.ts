@@ -1,4 +1,5 @@
 import type { AlarmSoundId } from '../types';
+import { notifyGoAudioAlarm, notifyGoAudioTick } from './goBridge';
 
 let audioCtx: AudioContext | null = null;
 
@@ -18,6 +19,7 @@ function getAudioContext(): AudioContext {
  */
 export function playAlarmSound(soundId: AlarmSoundId = 'bell', volume = 0.7): void {
 	if (typeof window === 'undefined') return;
+	if (notifyGoAudioAlarm(soundId, volume)) return;
 
 	try {
 		const ctx = getAudioContext();
@@ -201,6 +203,7 @@ export function playAlarmSound(soundId: AlarmSoundId = 'bell', volume = 0.7): vo
  */
 export function playTickSound(volume = 0.15): void {
 	if (typeof window === 'undefined') return;
+	if (notifyGoAudioTick(volume)) return;
 	try {
 		const ctx = getAudioContext();
 		const now = ctx.currentTime;

@@ -35,7 +35,12 @@ function loadSettings(): UserSettings {
 export const settings = writable<UserSettings>(loadSettings());
 
 if (typeof window !== 'undefined') {
+	let initSettingsSync = false;
 	settings.subscribe((val) => {
+		if (!initSettingsSync) {
+			initSettingsSync = true;
+			return;
+		}
 		try {
 			localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
 		} catch (e) {

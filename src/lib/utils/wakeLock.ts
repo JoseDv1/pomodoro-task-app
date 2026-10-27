@@ -1,6 +1,9 @@
+import { notifyGoWakeLock } from './goBridge';
+
 let wakeLockSentinel: any = null;
 
 export async function requestWakeLock(): Promise<boolean> {
+	notifyGoWakeLock(true);
 	if (typeof navigator === 'undefined' || !('wakeLock' in navigator)) {
 		return false;
 	}
@@ -19,6 +22,7 @@ export async function requestWakeLock(): Promise<boolean> {
 }
 
 export async function releaseWakeLock(): Promise<void> {
+	notifyGoWakeLock(false);
 	if (wakeLockSentinel) {
 		try {
 			await wakeLockSentinel.release();

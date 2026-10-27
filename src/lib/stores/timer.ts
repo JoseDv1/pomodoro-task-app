@@ -6,6 +6,7 @@ import { incrementActiveTaskPomodoro, activeTask } from './task';
 import { playAlarmSound, playTickSound } from '../utils/audioSynth';
 import { updateMediaSession, clearMediaSession } from '../utils/mediaSession';
 import { requestWakeLock, releaseWakeLock } from '../utils/wakeLock';
+import { notifyGoDesktopNotification } from '../utils/goBridge';
 
 const POMODORO_COUNT_KEY = 'pomodoroCount';
 const TIMER_STATE_KEY = 'pomodoro_timer_state';
@@ -32,7 +33,12 @@ export const interval = writable<number | undefined>(undefined);
 
 // Keep pomodoroCount synced with localStorage
 if (typeof window !== 'undefined') {
+	let initPomodoroSync = false;
 	pomodoroCount.subscribe((count) => {
+		if (!initPomodoroSync) {
+			initPomodoroSync = true;
+			return;
+		}
 		try {
 			localStorage.setItem(POMODORO_COUNT_KEY, count.toString());
 		} catch (e) {
@@ -216,14 +222,18 @@ export function handleSessionComplete(): void {
  */
 function triggerNotification(completedMode: TimerMode): void {
 	if (typeof window === 'undefined') return;
+
+	const isWork = completedMode === 'work';
+	const title = isWork ? '🎉 ¡Sesión de enfoque completada!' : '⏰ ¡Fin del descanso!';
+	const body = isWork
+		? 'Excelente trabajo. Es momento de relajar la mente y estirarte.'
+		: 'Tu mente está lista y despejada. ¡A por tu siguiente objetivo!';
+
+	notifyGoDesktopNotification(title, body);
+
 	if (!('Notification' in window) || Notification.permission !== 'granted') return;
 
 	try {
-		const isWork = completedMode === 'work';
-		const title = isWork ? '🎉 ¡Sesión de enfoque completada!' : '⏰ ¡Fin del descanso!';
-		const body = isWork
-			? 'Excelente trabajo. Es momento de relajar la mente y estirarte.'
-			: 'Tu mente está lista y despejada. ¡A por tu siguiente objetivo!';
 		const icon = isWork ? '/imgs/rest.jpg' : '/imgs/focus.jpg';
 
 		if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {

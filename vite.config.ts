@@ -25,6 +25,7 @@ function injectSwAssets(): Plugin {
           sw = sw.replace('/src/app.css', cssFile)
         }
         await fs.writeFile(swPath, sw)
+        await fs.rm(path.resolve('dist/.vite'), { recursive: true, force: true })
       } catch (e) {
         console.error('Failed to inject service worker asset URLs', e)
       }
@@ -37,5 +38,8 @@ export default defineConfig({
   plugins: [svelte(), injectSwAssets()],
   build: {
     manifest: true,
+    target: 'esnext',
+    modulePreload: { polyfill: false },
+    cssMinify: true,
   }
 })
