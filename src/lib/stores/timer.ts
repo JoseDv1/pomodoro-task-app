@@ -409,6 +409,49 @@ export function syncFromServiceWorker(remaining: number, isWork: boolean, active
 	syncMobileControls();
 }
 
+/**
+ * Sync timer state from native Android Widget / Background Service
+ */
+export function syncTimerFromNative(nativeTimer: {
+	mode: TimerMode;
+	duration: number;
+	timeLeft: number;
+	isRunning: boolean;
+	cycleCount: number;
+	endTime?: number | null;
+}): void {
+	const currentInterval = get(interval);
+	if (currentInterval) clearInterval(currentInterval);
+
+	const nextMode: TimerMode =
+		nativeTimer.mode === 'shortBreak' || nativeTimer.mode === 'longBreak'
+			? nativeTimer.mode
+			: 'work';
+	const nextDuration = Math.max(60, nativeTimer.duration || 25 * 60);
+	const nextCycle = Math.max(1, nativeTimer.cycleCount || 1);
+
+	mode.set(nextMode);
+	duration.set(nextDuration);
+	cycleCount.set(nextCycle);
+
+	if (nativeTimer.isRunning && nativeTimer.endTime && nativeTimer.endTime > Date.now()) {
+		const remaining = Math.max(0, Math.ceil((nativeTimer.endTime - Date.now()) / 1000));
+		timeLeft.set(remaining);
+		endTime.set(nativeTimer.endTime);
+		isRunning.set(true);
+		const newInterval = setInterval(updateTime, 1000) as unknown as number;
+		interval.set(newInterval);
+	} else {
+		const remaining = Math.max(0, nativeTimer.timeLeft ?? nextDuration);
+		timeLeft.set(remaining);
+		endTime.set(null);
+		isRunning.set(false);
+		interval.set(undefined);
+	}
+
+	syncMobileControls();
+}
+
 // Restore saved timer state on startup if app was closed while running
 if (typeof window !== 'undefined') {
 	try {

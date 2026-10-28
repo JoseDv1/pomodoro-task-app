@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pomodoro Focus</string>
+    <string name="widget_description">Controla tu temporizador Pomodoro, tarea activa y racha diaria desde la pantalla de inicio.</string>
+</resources>

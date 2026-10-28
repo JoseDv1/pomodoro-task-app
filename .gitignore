@@ -12,6 +12,10 @@ dist
 dist-ssr
 build/
 *.exe
+*.apk
+*.jks
+*.keystore
+android/res/mipmap-*
 *.local
 
 # Editor directories and files
